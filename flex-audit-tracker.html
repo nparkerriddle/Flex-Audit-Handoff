@@ -193,6 +193,12 @@
   .a-fixed-tag{font-weight:400;color:var(--muted);font-size:14px;}
   .a-audit{font-size:15px;color:var(--ink);margin-top:2px;}
   .a-stamp{font-size:13px;color:var(--muted);margin-top:4px;}
+  .a-cover{font-size:14px;color:var(--accent);margin-top:4px;}
+  .a-chip.reassign-btn{border-style:dashed;}
+  .h-cover{font-weight:400;color:var(--accent);font-size:13px;}
+  .history-year{display:block;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid var(--line);padding:10px 4px;font-size:16px;font-weight:700;color:var(--ink);cursor:pointer;}
+  .history-year-count{font-weight:400;color:var(--muted);font-size:14px;}
+  .modal-actions .undo-reassign{margin-right:auto;}
   .a-chips{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;}
   .a-chip{
     font-size:14px;
@@ -539,9 +545,11 @@
     .sidebar-item.active{border-color:var(--accent);}
     .week-nav{align-items:flex-start;}
   }
-  @media (max-width:520px){
+  @media (max-width:1100px){
     .a-row{flex-wrap:wrap;}
     .a-chips{width:100%;justify-content:flex-start;}
+  }
+  @media (max-width:520px){
     .stat-row{flex-wrap:wrap;}
     .list-row{flex-wrap:wrap;}
     .list-row .modal-input{flex-basis:calc(100% - 36px);}
@@ -571,7 +579,7 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<div class="error-bar" id="errorBar" role="alert" hidden><span id="errorText"></span><button type="button" data-action="dismiss-error">Dismiss</button></div>
+<div class="error-bar" id="errorBar" role="alert" hidden><span id="errorText"></span><button type="button" id="errorExport" data-action="export-raw" hidden>Download a Copy of My Data</button><button type="button" data-action="dismiss-error">Dismiss</button></div>
 <div id="modalRoot"></div>
 <div id="printArea"></div>
 
@@ -607,7 +615,8 @@ const LEGEND_NAME_MIGRATIONS = {
 // default text below. Leaves any real user edits untouched.
 const LEGEND_CONTENT_REFRESH = {
   "W4's": [
-    "Check the W4 for errors."
+    "Check the W4 for errors.",
+    "Check the W4 for errors, and make sure anyone claiming Exempt turned in a new W4 this year (exempt status expires every February 15)."
   ],
   "Audit Prep List": [
     "Ensure all Flex documents in Avionte Bold for each associate are signed and complete.",
@@ -616,20 +625,36 @@ const LEGEND_CONTENT_REFRESH = {
   "New Hire Audit": [
     "Double check that all new hire documents were uploaded to Box under Agency Materials, then New Hire Forms, then YES, then New Starts 202*. Create a new folder for the start date of those associates if it does not already exist, and upload.",
     "Double check that all new hire documents were uploaded to Box under Agency Materials, then New Hire Forms, then YES, then New Starts 202*. Create a new folder for the start date of those associates if it does not already exist, and upload. Ensure new hires are transferred from Training Manager to their real supervisor on their 3rd day of work in Workday. Ensure all new hires have every required document uploaded to their Avionte file — I-9, W4, DD, Flex Onboarding, Flex Assignment Acknowledgement Form, Candidate Screening Form, EMT Injury Reporting Agreement, Background Check, Drug Screen, and Offer Letter. If any are missing, note on the associate what's missing and get it fixed. Import the Core HR Contingent Worker report from Workday into the Flex Dashboard to keep the worker list there up to date.",
-    "Double check that all new hire documents were uploaded to Box under Agency Materials > New Hire Forms > YES > New Starts 202*. Create a new folder for the start date of those associates if it does not already exist, and upload. Ensure new hires are transferred from Training Manager to their real supervisor on their 3rd day of work in Workday. Ensure all new hires have every required document uploaded to their Avionte file — I-9, W4, DD, Flex Onboarding, Flex Assignment Acknowledgement Form, Candidate Screening Form, EMT Injury Reporting Agreement, Background Check, Drug Screen, and Offer Letter. If any are missing, note on the associate what's missing and get it fixed. Import the Core HR Contingent Worker report from Workday into the Flex Dashboard to keep the worker list there up to date."
+    "Double check that all new hire documents were uploaded to Box under Agency Materials > New Hire Forms > YES > New Starts 202*. Create a new folder for the start date of those associates if it does not already exist, and upload. Ensure new hires are transferred from Training Manager to their real supervisor on their 3rd day of work in Workday. Ensure all new hires have every required document uploaded to their Avionte file — I-9, W4, DD, Flex Onboarding, Flex Assignment Acknowledgement Form, Candidate Screening Form, EMT Injury Reporting Agreement, Background Check, Drug Screen, and Offer Letter. If any are missing, note on the associate what's missing and get it fixed. Import the Core HR Contingent Worker report from Workday into the Flex Dashboard to keep the worker list there up to date.",
+    "Double check that all new hire documents were uploaded to Box under Agency Materials > New Hire Forms > YES > New Starts 202*. Create a new folder for the start date of those associates if it does not already exist, and upload. Ensure new hires are transferred from Training Manager to their real supervisor on their 3rd day of work in Workday. Ensure all new hires have every required document uploaded to their Avionte file — I-9, W4, DD, Flex Onboarding, Flex Assignment Acknowledgement Form, Candidate Screening Form, EMT Injury Reporting Agreement, Background Check, Drug Screen, and Offer Letter. If any are missing, note on the associate what's missing and get it fixed. Import the Core HR - Contingent Worker Details report from Workday into the Flex Dashboard to keep the worker list there up to date.",
+    "Double check that all new hire documents were uploaded to your site's current file location (Box, SharePoint, OneDrive, or the extranet in Teams) in the New Starts folder for the current year (in Box: Agency Materials > New Hire Forms > YES > New Starts 202*). Create a new folder for the start date of those associates if it does not already exist, and upload. Ensure new hires are transferred from Training Manager to their real supervisor on their 3rd day of work in Workday. Ensure all new hires have every required document uploaded to their Avionte file — I-9, W4, DD, Flex Onboarding, Flex Assignment Acknowledgement Form, Candidate Screening Form, EMT Injury Reporting Agreement, Background Check, Drug Screen, and Offer Letter. If any are missing, note on the associate what's missing and get it fixed. Import the Core HR - Contingent Worker Details report from Workday into the Flex Dashboard to keep the worker list there up to date."
   ],
   "DD": [
-    "Ensure each active associate has a Direct Deposit or Rapid Card account set up. If nothing is set up, send the task to the associate or send them to a YES branch for a Rapid Card."
+    "Ensure each active associate has a Direct Deposit or Rapid Card account set up. If nothing is set up, send the task to the associate or send them to a YES branch for a Rapid Card.",
+    "Ensure each active associate has a Direct Deposit or Rapid Card account set up. If nothing is set up, send the task to the associate or send them to a YES branch for a Rapid Card. Paper checks are not an option."
   ],
   "Audit Core HR Report": [
     "Run the Core HR - Contingent Worker Details report from Workday and make sure every Flex associate's job details are accurate: Light Industrial code, work area, primary org, agency, work shift, wage, pay frequency, supervisor, markup, and Contingent Kronos ID area. Correct anything that is wrong or blank."
   ],
   "EAD": [
     "Check all actively working associates at Flex and see if they have any expiring employment documents coming up in the next 30 days. If they do, we need to collect their new IDs. If we do not have the IDs by 3 days after it expires, we must remove them from the assignment.",
-    "Check all actively working associates at Flex and see if they have any expiring employment documents coming up in the next 30 days. If they do, we need to collect their new IDs. If we do not have the IDs by 3 days after it expires, we must remove them from the assignment. Tip: the Expiring Certificates widget on your Avionte My Dashboard page shows expiring and already-expired EADs for all of YES."
+    "Check all actively working associates at Flex and see if they have any expiring employment documents coming up in the next 30 days. If they do, we need to collect their new IDs. If we do not have the IDs by 3 days after it expires, we must remove them from the assignment. Tip: the Expiring Certificates widget on your Avionte My Dashboard page shows expiring and already-expired EADs for all of YES.",
+    "Check the ID on file in the Certificates tab for every actively working associate at Flex. If it expires in the next 30 days, notify the associate and collect new documentation. If it has already expired, we must collect a new one within 3 days or remove them from the assignment. Upload the new ID to Certificates and update the certificate's required fields. Tip: the Expiring Certificates widget on your Avionte My Dashboard page shows expiring and already-expired EADs for all of YES."
   ],
   "Headcount Accuracy": [
-    "Ensure that the current headcount shown in Workday matches Avionte Bold and the Dashboard. If it does not, find the discrepancy and correct it."
+    "Ensure that the current headcount shown in Workday matches Avionte Bold and the Dashboard. If it does not, find the discrepancy and correct it.",
+    "Ensure that the Flex headcount in the Workday Core HR - Contingent Worker Details report matches the Flex Dashboard and Avionte Bold. The Flex Dashboard and the Core HR report must match each other. If anything does not match, find the discrepancy and correct it."
+  ],
+  "Terminations 100% Complete": [
+    "Ensure all terms for the week are completely done. Run the Workday report for Terminations and, for any names that populate, find them in Bold and make sure they're termed fully and status is changed from On Assignment. Then check the End of Assignment sheet in the Box and be sure it was completed there, check the Flex Master Dashboard and be sure it was done there, and check that the email was sent to security to deactivate the badge.",
+    "Ensure all terms for the week are completely done. Run the Workday report for Terminations and, for any names that populate, find them in Bold and make sure they're termed fully and status is changed from On Assignment. Then check the End of Assignment sheet in your site's current file location (Box, SharePoint, OneDrive, or the extranet in Teams) and be sure it was completed there, check the Flex Master Dashboard and be sure it was done there, and check that the email was sent to security to deactivate the badge.",
+    "Ensure all terms for the week are completely done. Run the Workday report for Terminations and, for any names that populate, find them in Bold and make sure they're termed fully. If they are not, term them: enter their last day worked as the End Date on their assignment and leave a note marked \"Termination\" in their Logged Activity. Make sure their status is changed from On Assignment. Then check the End of Assignment sheet in your site's current file location (Box, SharePoint, OneDrive, or the extranet in Teams) and be sure it was completed there, check the Flex Master Dashboard and be sure it was done there, and check that the email was sent to security to deactivate the badge."
+  ],
+  "Absenteeism Tracker & Employee SSN Tab on Payroll Tracker": [
+    "Ensure that all data for the prior week was completely filled out. If there are notes that say pending supervisor approval or something similar, reach out to the person who entered the note and ask them to update it, and notify you once it's completed."
+  ],
+  "I-9's": [
+    "Check that all active associates have an accurate and complete I-9 in Avionte with IDs that are not expired on the I-9 document."
   ]
 };
 const DEFAULT_AUDITS = [
@@ -643,43 +668,67 @@ const DEFAULT_AUDITS = [
 // Individual audit components for the Legend — grouped by the slot they fall under
 // in the weekly rotation (slot "0" covers three separate checks done as one assignment).
 const LEGEND_ITEMS = [
-  { slot: "0", name: "Bold Status", detail: "Check Avionte Bold to ensure the associate's status is accurate. If they are actively working it should read On Assignment. If it does not say that, change it. If they are termed but showing as On Assignment, it needs to be changed to Active or Inactive depending on if they are actively looking for work.", sop: "1. Log into Avionte Bold and navigate to the Analyze tab at the top of the screen.\n2. Select the report titled Active Consultants.\n3. In the sidebar, select Company and choose Flex.\n4. Select Date Range and choose Today.\n5. Make sure that in your filters, Talent Status is selected.\n6. Review all the talent statuses. All should say On Assignment.\n7. If they do not, go into that associate and change the status:\n   - Still employed at Flex → On Assignment\n   - No longer employed at Flex, still looking for work → Active\n   - No longer employed at Flex, found a job elsewhere → Inactive\n8. To change the status: go into the associate's profile, hover your mouse over their picture in the top left, and select the edit button (looks like a pencil and notepad).\n9. Choose Talent Status, change the status, and click the blue save icon when finished.\n10. In the Audit Tracker, enter the associate's Bold ID that you changed and enter notes describing what was completed." },
-  { slot: "0", name: "EAD", detail: "Check the ID on file in the Certificates tab for every actively working associate at Flex. If it expires in the next 30 days, notify the associate and collect new documentation. If it has already expired, we must collect a new one within 3 days or remove them from the assignment. Upload the new ID to Certificates and update the certificate's required fields. Tip: the Expiring Certificates widget on your Avionte My Dashboard page shows expiring and already-expired EADs for all of YES.", sop: "Shortcut — Expiring Certificates widget (set up once):\n- In Avionte, go to your My Dashboard page.\n- At the top of the page, click Add Widget.\n- Click the green plus sign next to Expiring Certificates.\n- The widget stays on your dashboard from then on. It shows EADs that are expiring and ones that have already expired for all of YES, so look for the Flex associates on it.\nUse the widget to quickly spot who needs follow-up, then work through the steps below.\n\n1. Log into Avionte Bold and navigate to the Analyze tab at the top of the screen.\n2. Select the report titled Active Consultants.\n3. In the sidebar, select Company and choose Flex.\n4. Select Date Range and choose Today.\n5. Open each associate's profile and go to the Certificates tab. View the ID on file and its expiration date.\n6. Important — do NOT ask for new documents from:\n   - U.S. citizens\n   - Permanent residents (green card holders), even if the green card itself is expiring\n   - Anyone whose only expiring document is a List B ID, like a driver's license\n   Asking these associates for new documents is not allowed.\n7. If the ID is close to expiring (within the next 30 days), notify the associate and collect new documentation before it expires. They may show any unexpired document from List A or List C (see the I-9 list of acceptable documents) — do not ask for a specific one.\n8. If the ID has already expired, we need to collect a new one within 3 days. Tell the Onsite Manager right away. Some work permits are automatically extended (the associate may have a Form I-797C receipt notice), so check with the Onsite Manager before removing anyone. If we still do not have a valid document 3 days after the old one expires, the associate must be removed from the assignment.\n9. Once you have the new ID:\n   - Upload it to the associate's Certificates tab.\n   - Edit the certificate: add the new ID and update the required fields (like the expiration date) to match the new document.\n   - Complete Supplement B (the reverification page of the I-9).\n10. In the Audit Tracker, enter the Bold ID of each associate you followed up with and note the expiration date and what was done." },
-  { slot: "0", name: "Audit Core HR Report", detail: "Run the Core HR - Contingent Worker Details report from Workday and make sure every Flex associate's job details are accurate: Light Industrial code, work area, primary org, agency, work shift, wage, pay frequency, supervisor, markup, and Contingent Kronos ID area. Compare supervisor, shift, and department against the Req Tracker / Flex Q; the rest should match the standard values for the Flex account. Correct anything that is wrong or blank in Workday.", sop: "1. In Workday, run the Core HR - Contingent Worker Details report. (This is the same report used for the Headcount Accuracy audit.)\n2. Export it to Excel so you can sort and filter the columns.\n3. For every associate on the report, check that each of these is accurate and not blank:\n   - Light Industrial code\n   - Work area\n   - Primary org\n   - Agency\n   - Work shift\n   - Wage\n   - Pay frequency\n   - Supervisor\n   - Markup\n   - Contingent Kronos ID area\n4. What to compare against:\n   - Supervisor, shift, and department → the Req Tracker or Flex Q (Flex Q is imported from the Req Tracker, so they should match)\n   - Wage, pay frequency, markup, Light Industrial code, primary org, agency, and Contingent Kronos ID area → these are the standard values for the Flex account. Anything that doesn't match the account standard is wrong.\n5. Tip: sort or filter one column at a time. Blanks and values that don't match the rest (for example, a different wage or markup than others in the same job) stand out quickly.\n6. Correct anything that is wrong or blank in Workday.\n7. Re-run the report to confirm your corrections show up.\n8. In the Audit Tracker, enter the Bold ID of each associate you corrected and note which field was wrong and what you changed it to." },
-  { slot: "1", name: "Audit Prep List", detail: "Contact all associates on the Prep List to find out if they are still interested in waiting for a position. If they are not, remove their row. If they are, update the column showing how many times we've contacted them and the Last Contacted date column. Also contact anyone who has been prepped but has not attended a Mini Orientation — everyone on the Prep List should have attended one.", sop: "1. Open the Prep List spreadsheet.\n2. Start at the top and work through every associate on the list.\n3. Check whether each associate has attended a Mini Orientation. Everyone on the Prep List should have attended one.\n4. Call or text each associate and ask if they are still interested in waiting for a position at Flex.\n5. If they are NOT still interested, delete their row from the Prep List.\n6. If they ARE still interested:\n   - Add 1 to the column showing how many times we have contacted them.\n   - Update the Last Contacted date column to today's date.\n   - If they have been prepped but have NOT attended a Mini Orientation, ask them to attend the next one and add them to the Mini Orientation tab in Flex Q.\n7. If you could not reach them, still update the contact count and Last Contacted date, and leave a short note that there was no answer (and that they still need a Mini Orientation, if they do).\n8. In the Audit Tracker, enter notes describing what was completed (for example: how many associates were contacted, how many were removed, and how many still need a Mini Orientation)." },
-  { slot: "2", name: "Headcount Accuracy", detail: "Ensure that the Flex headcount in the Workday Core HR - Contingent Worker Details report matches the Flex Dashboard and Avionte Bold. The Flex Dashboard and the Core HR report must match each other. If anything does not match, find the discrepancy and correct it.", sop: "1. In Workday, run the Core HR - Contingent Worker Details report and note the current Flex headcount.\n2. Pull the current Flex headcount from Avionte Bold: Analyze tab → Active Consultants report → Company: Flex → Date Range: Today.\n3. Check the current headcount shown on the Flex Dashboard.\n4. Compare the Flex Dashboard headcount to the Core HR report headcount. These two must match.\n5. Compare the Avionte Bold headcount to both. If all three numbers match, the audit is complete.\n6. If they do not match, compare the name lists side by side to find which associates are missing or extra in each system.\n7. Common causes:\n   - The latest Core HR report has not been imported into the Flex Dashboard yet (import it the same way as in the New Hire Audit)\n   - A termination that was done in one system but not the others\n   - A new hire that was not added everywhere yet\n   - A status in Bold that was not changed to On Assignment, Active, or Inactive\n8. Correct each discrepancy in the system that is wrong.\n9. Re-check all three numbers to confirm they now match.\n10. In the Audit Tracker, enter the Bold ID of each associate you corrected and note what was wrong and where." },
-  { slot: "3", name: "New Hire Audit", detail: "Double check that all new hire documents were uploaded to Box under Agency Materials > New Hire Forms > YES > New Starts 202*. Create a new folder for the start date of those associates if it does not already exist, and upload. Ensure new hires are transferred from Training Manager to their real supervisor on their 3rd day of work in Workday. Ensure all new hires have every required document uploaded to their Avionte file — I-9, W4, DD, Flex Onboarding, Flex Assignment Acknowledgement Form, Candidate Screening Form, EMT Injury Reporting Agreement, Background Check, Drug Screen, and Offer Letter. If any are missing, note on the associate what's missing and get it fixed. Import the Core HR - Contingent Worker Details report from Workday into the Flex Dashboard to keep the worker list there up to date.", sop: "Box Uploads:\n1. Open Box and go to Agency Materials → New Hire Forms → YES → New Starts (current year).\n2. Confirm there is a folder for each start date from this week. If one is missing, create it, named with the start date.\n3. Confirm every new hire's documents are uploaded in the correct start date folder. Upload anything that is missing.\n\nWorkday Supervisor Transfer:\n4. In Workday, check every new hire who is on their 3rd day of work or later.\n5. Confirm they have been moved from Training Manager to their real supervisor. If not, transfer them.\n\nAvionte Bold File:\n6. Open each new hire's file in Avionte Bold and confirm all of these documents are uploaded:\n   - I-9\n   - W4\n   - DD (Direct Deposit or Rapid Card)\n   - Flex Onboarding\n   - Flex Assignment Acknowledgement Form\n   - Candidate Screening Form\n   - EMT Injury Reporting Agreement\n   - Background Check\n   - Drug Screen\n   - Offer Letter\n7. If anything is missing, leave a note on the associate's Bold file listing what is missing, and follow up until it is fixed.\n\nFlex Dashboard:\n8. In Workday, run the Core HR - Contingent Worker Details report and export it.\n9. Import that report into the Flex Dashboard so the worker list is up to date.\n\n10. In the Audit Tracker, enter the Bold ID of any new hire with missing items and note what was missing and what was done." },
-  { slot: "4", name: "Terminations 100% Complete", detail: "Ensure all terms for the week are completely done. Run the Workday report for Terminations and, for any names that populate, find them in Bold and make sure they're termed fully and status is changed from On Assignment. Then check the End of Assignment sheet in the Box and be sure it was completed there, check the Flex Master Dashboard and be sure it was done there, and check that the email was sent to security to deactivate the badge.", sop: "1. In Workday, run the Terminations report for this week.\n2. For every name on the report, complete steps 3 through 7.\n3. Find the associate in Avionte Bold. Confirm they are fully termed and their status is no longer On Assignment:\n   - Still looking for work → Active\n   - Found a job elsewhere or not returning → Inactive\n4. To change the status: open the associate's profile, hover over their picture in the top left, click the edit button (pencil and notepad), choose Talent Status, change it, and click the blue save icon.\n5. Open the End of Assignment sheet in Box and confirm the termination was entered there.\n6. Open the Flex Master Dashboard and confirm the termination was entered there.\n7. Confirm the email was sent to security to deactivate the associate's badge. If it was not sent, send it now.\n8. In the Audit Tracker, enter the Bold ID of any associate where something was missing and note what you fixed." },
-  { slot: "5", name: "Absenteeism Tracker & Employee SSN Tab on Payroll Tracker", detail: "Ensure that all data for the prior week was completely filled out. If there are notes that say pending supervisor approval or something similar, reach out to the person who entered the note and ask them to update it, and notify you once it's completed.", sop: "Absenteeism Tracker:\n1. Open the Absenteeism Tracker and go to the prior week.\n2. Confirm every row for that week has all required columns filled in.\n3. Look for notes like \"pending supervisor approval\" or anything else that is not final.\n\nEmployee SSN Tab on Payroll Tracker:\n4. Open the Payroll Tracker and go to the Employee SSN tab.\n5. Confirm every row for the prior week is completely filled out.\n\nFollow Up:\n6. For anything incomplete or pending, reach out to the person who entered it and ask them to update it and let you know once it's done.\n7. Once they confirm, re-check that it was actually updated.\n8. In the Audit Tracker, enter notes describing what was incomplete and who you followed up with." },
-  { slot: "fixed", name: "I-9's", detail: "Check that all active associates have an accurate and complete I-9 in Avionte with IDs that are not expired on the I-9 document.", sop: "Section 1 — Employee Information and Attestation:\n1. Confirm the name is in the correct order and matches the ID document presented — as much of the employee's legal name as the system allows.\n2. Confirm the address is a current, valid physical address that makes sense for the job assignment. Double-check anything listing an out-of-state address for accuracy.\n3. Confirm the Date of Birth matches the ID presented.\n4. Confirm the Social Security Number is valid — do not accept invalid SSNs.\n5. Confirm exactly one citizenship/immigration status box is checked:\n   - If box 3 (lawful permanent resident) is checked, confirm the USCIS or A-Number is filled in.\n   - If box 4 (noncitizen authorized to work until) is checked, confirm the expiration date is filled in if the document has one — do not accept a default 'n/a'.\n   - Confirm any A-Numbers entered are valid.\n6. Note: Middle Initial, Other Names Used, Email, and Phone Number are NOT required fields — they can be complete, partial, or blank. Do not flag these as errors.\n\nSection 2 — Employer Review and Verification:\n7. Confirm the document(s) listed match what was actually presented — Title, Issuing Authority, Document #, and Expiration Date.\n8. Confirm expiration dates are only filled in when the document itself lists one — should be left blank if the document doesn't expire.\n9. If a List A document is an I-94, confirm it was presented together with an unexpired foreign passport.\n10. If a List C document is an I-94 presented without a foreign passport, confirm a List B ID was also collected.\n11. Confirm the First Day of Employment matches the date the associate was entered into the applicant pool.\n12. If anything was corrected, confirm no white-out was used — the correct method is a single line drawn through the incorrect/missing information, with the correction entered and initialed and dated in the Additional Information/Notes section.\n\nAcceptable Documents (List A / B / C):\n13. Confirm the documentation presented is an acceptable combination: one selection from List A, OR one from List B AND one from List C.\n14. All documents with an expiration date must be unexpired (unless extended by the issuing authority).\n15. If a receipt was presented instead of an original document, confirm it's a valid receipt type (replacement for a lost/stolen/damaged List A, B, or C document, or a qualifying I-94/refugee stamp) and check the M-274 for receipt validity dates.\n\n16. Once reviewed, enter the associate's Bold ID and your audit notes (what was checked, any corrections made) in the Audit Tracker.", image: I9_IMAGE },
-  { slot: "fixed", name: "W4's", detail: "Check the W4 for errors, and make sure anyone claiming Exempt turned in a new W4 this year (exempt status expires every February 15).", sop: "1. Open each active associate's W4 in their Avionte Bold file. Pull the active list from the Analyze tab → Active Consultants report → Company: Flex → Date Range: Today.\n2. Confirm it is the 2020 or newer version of the W4.\n3. Step 1 (Personal Information) must be complete:\n   - Full name\n   - Address\n   - Social Security Number\n   - One filing status box checked (Single or Married filing separately, Married filing jointly or Qualifying surviving spouse, or Head of household)\n4. Steps 2, 3, and 4 are optional. Leaving them blank is not an error.\n5. If Step 3 (dependents) is filled in, confirm the amounts are written as numbers and the total is added up.\n6. Step 5 must be signed and dated by the associate. An unsigned W4 is not valid.\n7. If the associate claimed \"Exempt\", confirm the W4 was signed this calendar year. An exempt W4 expires every year on February 15 — if a new one was not turned in by then, withholding must switch to Single (or Married filing separately) with no adjustments until a new W4 is received.\n8. Confirm the name and SSN match the associate's I-9.\n9. If anything is missing or wrong, have the associate fill out a new W4. Do not correct it for them.\n10. In the Audit Tracker, enter the Bold ID of any associate whose W4 needed fixing and note what was wrong." },
-  { slot: "fixed", name: "DD", detail: "Ensure each active associate has a Direct Deposit or Rapid Card account set up. If nothing is set up, send the task to the associate or send them to a YES branch for a Rapid Card. Paper checks are not an option.", sop: "1. Pull the active list from Avionte Bold: Analyze tab → Active Consultants report → Company: Flex → Date Range: Today.\n2. Open each associate's file and confirm they have either a Direct Deposit account or a Rapid Card set up.\n3. If nothing is set up, either:\n   - Send the Direct Deposit task to the associate to complete, or\n   - Send them to a YES branch to get a Rapid Card.\n   Paper checks are not an option — Direct Deposit and Rapid Card are the only two choices.\n4. Follow up to help them choose a pay method. Never hold back an associate's pay because Direct Deposit or a Rapid Card is not set up.\n5. In the Audit Tracker, enter the Bold ID of each associate without pay set up and note what you sent them or where you sent them." }
+  { slot: "0", name: "Bold Status", detail: "Check Avionte Bold to ensure the associate's status is accurate. If they are actively working it should read On Assignment. If it does not say that, change it. If they are termed but showing as On Assignment, it needs to be changed to Active or Inactive depending on if they are actively looking for work.", sop: "1. Log into Avionte Bold and navigate to the Analyze tab at the top of the screen.\n2. Select the report titled Active Consultants.\n3. In the sidebar, select Company and choose Flex.\n4. Select Date Range and choose Today.\n5. Make sure that in your filters, Talent Status is selected.\n6. Review all the talent statuses. All should say On Assignment.\n7. If they do not, change that associate's status to the right one:\n   - Still employed at Flex → On Assignment\n   - No longer employed at Flex, still looking for work → Active\n   - No longer employed at Flex, found a job elsewhere or not returning → Inactive\n8. To change the status: go into the associate's profile, hover your mouse over their picture in the top left, and select the edit button (looks like a pencil and notepad). Choose Talent Status, change the status, and click the blue save icon when finished.\n9. In the Audit Tracker, enter the Bold ID of each associate you changed and enter notes describing what was completed." },
+  { slot: "0", name: "EAD", detail: "Check the work permit (EAD) on file in the Avionte Bold Certificates tab for every actively working associate at Flex. If it expires in the next 30 days, notify the associate and collect new documentation. If it has already expired, we must collect a new one within 3 days or remove them from the assignment — check with the Onsite Manager first, because some work permits are automatically extended. Upload the new document to Certificates and update the certificate's required fields. Tip: the Expiring Certificates widget on your Avionte Bold My Dashboard page shows expiring and already-expired EADs for all of YES.", sop: "Shortcut — Expiring Certificates widget (set up once):\n- In Avionte Bold, go to your My Dashboard page.\n- At the top of the page, click Add Widget.\n- Click the green plus sign next to Expiring Certificates.\n- The widget stays on your dashboard from then on. It shows EADs that are expiring and ones that have already expired for all of YES, so look for the Flex associates on it.\nUse the widget to quickly spot who needs follow-up, then work through the steps below.\n\n1. Log into Avionte Bold and navigate to the Analyze tab at the top of the screen.\n2. Select the report titled Active Consultants.\n3. In the sidebar, select Company and choose Flex.\n4. Select Date Range and choose Today.\n5. Open each associate's profile and go to the Certificates tab. View the work permit (EAD) on file and its expiration date.\n6. Important — do NOT ask for new documents from:\n   - U.S. citizens\n   - Permanent residents (green card holders), even if the green card itself is expiring\n   - Anyone whose only expiring document is a List B ID, like a driver's license\n   Asking these associates for new documents is not allowed.\n7. If the work permit is close to expiring (within the next 30 days), notify the associate and collect new documentation before it expires. They may show any unexpired document from List A or List C (see the I-9 list of acceptable documents) — do not ask for a specific one.\n8. If the work permit has already expired, we need to collect a new one within 3 days. Tell the Onsite Manager right away. Some work permits are automatically extended (the associate may have a Form I-797C receipt notice), so check with the Onsite Manager before removing anyone. If we still do not have a valid document 3 days after the old one expires, the associate must be removed from the assignment.\n9. Once you have the new document:\n   - Upload it to the associate's Certificates tab.\n   - Edit the certificate: add the new document and update the required fields (like the expiration date) to match the new document.\n   - Complete Supplement B (the reverification page of the I-9) after looking at the original document.\n10. In the Audit Tracker, enter the Bold ID of each associate you followed up with and note the expiration date and what was done." },
+  { slot: "0", name: "Audit Core HR Report", detail: "Run the Core HR - Contingent Worker Details report from Workday and make sure every Flex associate's job details are accurate: Light Industrial code, work area, primary org, agency, work shift, wage, pay frequency, supervisor, markup, and Contingent Kronos ID area. Compare supervisor, shift, and department against the Req Tracker / Flex Q; the rest should match the standard values for the Flex account. Correct anything that is wrong or blank in Workday.", sop: "1. In Workday, run the Core HR - Contingent Worker Details report. (This is the same report used for the Headcount Accuracy audit.)\n2. Export it to Excel so you can sort and filter the columns.\n3. For every associate on the report, check that each of these is accurate and not blank:\n   - Light Industrial code\n   - Work area\n   - Primary org\n   - Agency\n   - Work shift\n   - Wage\n   - Pay frequency\n   - Supervisor\n   - Markup\n   - Contingent Kronos ID area\n4. What to compare against:\n   - Supervisor, shift, and department → the Req Tracker or Flex Q (Flex Q is imported from the Req Tracker, so they should match)\n   - Wage, pay frequency, markup, Light Industrial code, primary org, agency, and Contingent Kronos ID area → these are the standard values for the Flex account. Anything that doesn't match the account standard is wrong.\n5. Tip: sort or filter one column at a time. Blanks and values that don't match the rest (for example, a different wage or markup than others in the same job) stand out quickly.\n6. Correct anything that is wrong or blank in Workday.\n7. Re-run the report to confirm your corrections show up.\n8. In the Audit Tracker, enter the Bold ID of each associate you corrected (the Workday report doesn't show Bold IDs, so look each one up in Avionte Bold) and note which field was wrong and what you changed it to." },
+  { slot: "1", name: "Audit Prep List", detail: "Contact all associates on the Prep List to find out if they are still interested in waiting for a position. If they are not, remove their row. If they are, update the column showing how many times we've contacted them and the Last Contacted date column. Also contact anyone who has been prepped but has not attended a Mini Orientation — everyone on the Prep List should have attended one.", sop: "Where files are kept: Flex/Axiom may use Box, SharePoint, OneDrive, or the extranet in Teams, depending on the site and its current process. Always use the one your site uses now.\n\n1. Open the Prep List spreadsheet.\n2. Start at the top and work through every associate on the list.\n3. Check whether each associate has attended a Mini Orientation. Everyone on the Prep List should have attended one.\n4. Call or text each associate and ask if they are still interested in waiting for a position at Flex.\n5. If they are NOT still interested, delete their row from the Prep List.\n6. If they ARE still interested:\n   - Add 1 to the column showing how many times we have contacted them.\n   - Update the Last Contacted date column to today's date.\n   - If they have been prepped but have NOT attended a Mini Orientation, ask them to attend the next one and add them to the Mini Orientation tab in Flex Q.\n7. If you could not reach them, still update the contact count and Last Contacted date, and leave a short note that there was no answer (and that they still need a Mini Orientation, if they do).\n8. In the Audit Tracker, enter notes describing what was completed (for example: how many associates were contacted, how many were removed, and how many still need a Mini Orientation)." },
+  { slot: "2", name: "Headcount Accuracy", detail: "Ensure that the Flex headcount in the Workday Core HR - Contingent Worker Details report, the Flex Master Dashboard, and Avionte Bold all match. If anything does not match, find the discrepancy and correct it.", sop: "1. In Workday, run the Core HR - Contingent Worker Details report and note the current Flex headcount.\n2. Pull the current Flex headcount from Avionte Bold: Analyze tab → Active Consultants report → Company: Flex → Date Range: Today.\n3. Check the current headcount shown on the Flex Master Dashboard.\n4. Compare the Flex Master Dashboard headcount to the Core HR report headcount. These two must match.\n5. Compare the Avionte Bold headcount to both. If all three numbers match, the audit is complete.\n6. If they do not match, compare the name lists side by side to find which associates are missing or extra in each system.\n7. Common causes:\n   - The latest Core HR report has not been imported into the Flex Master Dashboard yet (import it the same way as in the New Hire Audit, steps 8–9)\n   - A termination that was done in one system but not the others\n   - A new hire that was not added everywhere yet\n   - A status in Avionte Bold that was not changed to On Assignment, Active, or Inactive\n8. Correct each discrepancy in the system that is wrong.\n9. Re-check all three numbers to confirm they now match.\n10. In the Audit Tracker, enter the Bold ID of each associate you corrected and note what was wrong and where." },
+  { slot: "3", name: "New Hire Audit", detail: "Double check that all new hire documents were uploaded to your site's current file location (Box, SharePoint, OneDrive, or the extranet in Teams) in the New Starts folder for the current year (in Box: Agency Materials > New Hire Forms > YES > New Starts). Create a new folder for the start date of those associates if it does not already exist, and upload. Ensure new hires are transferred from Training Manager to their real supervisor on their 3rd day of work in Workday. Ensure all new hires have every required document uploaded to their Avionte Bold file — I-9, W4, DD, Flex Onboarding, Flex Assignment Acknowledgement Form, Candidate Screening Form, EMT Injury Reporting Agreement, Background Check, Drug Screen, and Offer Letter. If any are missing, note on the associate what's missing and get it fixed. Import the Core HR - Contingent Worker Details report from Workday into the Flex Master Dashboard to keep the worker list there up to date.", sop: "Where files are kept: Flex/Axiom may use Box, SharePoint, OneDrive, or the extranet in Teams, depending on the site and its current process. Always use the one your site uses now.\n\nFile Uploads:\n1. Open your site's current file location and go to the New Starts folder for the current year (in Box: Agency Materials → New Hire Forms → YES → New Starts (current year)).\n2. Confirm there is a folder for each start date from this week. If one is missing, create it, named with the start date.\n3. Confirm every new hire's documents are uploaded in the correct start date folder. Upload anything that is missing.\n\nWorkday Supervisor Transfer:\n4. In Workday, check every new hire who is on their 3rd day of work or later.\n5. Confirm they have been moved from Training Manager to their real supervisor. If not, transfer them.\n\nAvionte Bold File:\n6. Open each new hire's file in Avionte Bold and confirm all of these documents are uploaded:\n   - I-9\n   - W4\n   - DD (Direct Deposit or Rapid Card)\n   - Flex Onboarding\n   - Flex Assignment Acknowledgement Form\n   - Candidate Screening Form\n   - EMT Injury Reporting Agreement\n   - Background Check\n   - Drug Screen\n   - Offer Letter\n7. If anything is missing, leave a note on the associate's Avionte Bold file listing what is missing, and follow up until it is fixed.\n\nFlex Master Dashboard:\n8. In Workday, run the Core HR - Contingent Worker Details report and export it.\n9. Import that report into the Flex Master Dashboard so the worker list is up to date.\n\n10. In the Audit Tracker, enter the Bold ID of any new hire with missing items and note what was missing and what was done." },
+  { slot: "4", name: "Terminations 100% Complete", detail: "Ensure all terms for the week are completely done. Run the Workday report for Terminations and, for any names that populate, find them in Avionte Bold and make sure they're fully termed. If they are not, term them: enter their last day worked as the End Date on their assignment, then add a Logged Activity, choose Termination, and type your notes. Make sure their status is changed from On Assignment. Then check the End of Assignment sheet in your site's current file location (Box, SharePoint, OneDrive, or the extranet in Teams) and be sure it was completed there, check the Flex Master Dashboard and be sure it was done there, and check that the email was sent to security to deactivate the badge.", sop: "Where files are kept: Flex/Axiom may use Box, SharePoint, OneDrive, or the extranet in Teams, depending on the site and its current process. Always use the one your site uses now.\n\n1. In Workday, run the Terminations report for this week.\n2. For every name on the report, complete steps 3 through 8.\n3. Find the associate in Avionte Bold and confirm they are fully termed. Fully termed means all three of these are done:\n   - Their assignment has an End Date (their last day worked).\n   - Their Logged Activity has a Termination entry.\n   - Their status is no longer On Assignment.\n4. If the End Date or Termination entry is missing, fix it now:\n   - Open their assignment and enter their last day worked as the End Date. Save it.\n   - Go to their Logged Activity, add a new activity, choose Termination, and type your notes about the termination.\n5. If their status is still On Assignment, change it:\n   - Still looking for work → Active\n   - Found a job elsewhere or not returning → Inactive\n   To change the status: open the associate's profile, hover over their picture in the top left, click the edit button (pencil and notepad), choose Talent Status, change it, and click the blue save icon.\n6. Open the End of Assignment sheet in your site's current file location and confirm the termination was entered there.\n7. Open the Flex Master Dashboard and confirm the termination was entered there.\n8. Confirm the email was sent to security to deactivate the associate's badge. If it was not sent, send it now.\n9. In the Audit Tracker, enter the Bold ID of any associate where something was missing and note what you fixed." },
+  { slot: "5", name: "Absenteeism Tracker & Employee SSN Tab on Payroll Tracker", detail: "Ensure that all data for the prior week was completely filled out. If there are notes that say pending supervisor approval or something similar, reach out to the person who entered the note and ask them to update it and let you know when it's done.", sop: "Where files are kept: Flex/Axiom may use Box, SharePoint, OneDrive, or the extranet in Teams, depending on the site and its current process. Always use the one your site uses now.\n\nAbsenteeism Tracker:\n1. Open the Absenteeism Tracker and go to the prior week.\n2. Confirm every row for that week has all required columns filled in.\n3. Look for notes like \"pending supervisor approval\" or anything else that is not final.\n\nEmployee SSN Tab on Payroll Tracker:\n4. Open the Payroll Tracker and go to the Employee SSN tab.\n5. Confirm every row for the prior week is completely filled out.\n\nFollow Up:\n6. For anything incomplete or pending, reach out to the person who entered it and ask them to update it and let you know once it's done.\n7. Once they confirm, re-check that it was actually updated.\n8. In the Audit Tracker, enter notes describing what was incomplete and who you followed up with." },
+  { slot: "fixed", name: "I-9's", detail: "Check that all active associates have an accurate and complete I-9 in Avionte Bold. Every document must have been unexpired on the day the I-9 was signed — an expired document can't be accepted. If a List A document has expired since then and the associate is not a U.S. citizen, it needs to be replaced (follow the EAD guide).", sop: "Section 1 — Employee Information and Attestation:\n1. Confirm the name is in the correct order and matches the ID document presented — as much of the employee's legal name as the system allows.\n2. Confirm the address is a current, valid physical address that makes sense for the job assignment. Double-check anything listing an out-of-state address for accuracy.\n3. Confirm the Date of Birth matches the ID presented.\n4. Confirm the Social Security Number is filled in and valid (9 digits) — do not accept invalid SSNs. The SSN is required on our I-9s because YES uses E-Verify.\n5. Confirm exactly one citizenship/immigration status box is checked:\n   - If box 3 (lawful permanent resident) is checked, confirm the USCIS or A-Number is filled in.\n   - If box 4 (noncitizen authorized to work until) is checked, confirm the expiration date is filled in if their work permit has one. 'N/A' is only correct when the work permit has no end date (for example, some refugees and asylees). Also confirm one of these is filled in: USCIS/A-Number, Form I-94 number, or foreign passport number and country.\n   - Confirm any A-Numbers entered are valid.\n6. Note: Middle Initial, Other Names Used, Email, and Phone Number are NOT required fields — they can be complete, partial, or blank. Do not flag these as errors.\n\nSection 2 — Employer Review and Verification:\n7. Confirm the document(s) listed match what was actually presented — Title, Issuing Authority, Document #, and Expiration Date.\n8. Confirm expiration dates are only filled in when the document itself lists one — should be left blank if the document doesn't expire.\n9. If a List A document is an I-94, confirm it was presented together with an unexpired foreign passport.\n10. If a List C document is an I-94 presented without a foreign passport, confirm a List B ID was also collected.\n11. Confirm the First Day of Employment matches the date the associate was entered into the applicant pool.\n12. If anything was corrected, confirm no white-out was used. The correct method is a single line drawn through the incorrect information, with the correct information written next to it, initialed and dated. A short explanation can be added in the Additional Information section. Only the associate may correct Section 1 — if Section 1 has an error, have the associate fix it.\n\nAcceptable Documents (List A / B / C):\n13. Confirm the documentation presented is an acceptable combination: one selection from List A, OR one from List B AND one from List C.\n14. Every document with an expiration date must have been unexpired on the day the I-9 was signed (unless extended by the issuing authority). An expired document can't be accepted. If a List A document has expired since then and the associate is not a U.S. citizen, it needs to be replaced — follow the EAD guide.\n15. If a receipt was presented instead of an original document, confirm it's a valid receipt type (replacement for a lost/stolen/damaged List A, B, or C document, or a qualifying I-94/refugee stamp) and check the M-274 (USCIS Handbook for Employers) for receipt validity dates.\n\n16. Once reviewed, enter the associate's Bold ID and your audit notes (what was checked, any corrections made) in the Audit Tracker.", image: I9_IMAGE },
+  { slot: "fixed", name: "W4's", detail: "Check the W4 for errors, and make sure anyone claiming Exempt turns in a new W4 every year by February 15 (last year's exempt W4 is still valid until then).", sop: "1. Pull the active list from Avionte Bold: Analyze tab → Active Consultants report → Company: Flex → Date Range: Today. Then open each associate's W4 in their Avionte Bold file.\n2. Confirm it is the 2020 or newer version of the W4.\n3. Step 1 (Personal Information) must be complete:\n   - Full name\n   - Address\n   - Social Security Number\n   - One filing status box checked (Single or Married filing separately, Married filing jointly or Qualifying surviving spouse, or Head of household)\n4. Steps 2, 3, and 4 are optional. Leaving them blank is not an error.\n5. If Step 3 (dependents) is filled in, confirm the amounts are written as numbers and the total is added up.\n6. Step 5 must be signed and dated by the associate. An unsigned W4 is not valid.\n7. If the associate claimed \"Exempt\": an exempt W4 expires every year on February 15. From January 1 to February 15, last year's exempt W4 is still valid. After February 15, confirm a new W4 was signed this year — if one was not turned in, withholding must switch to Single (or Married filing separately) with no adjustments until a new W4 is received.\n8. Confirm the name and SSN match the associate's I-9.\n9. If anything is missing or wrong, have the associate fill out a new W4. Do not correct it for them.\n10. In the Audit Tracker, enter the Bold ID of any associate whose W4 needed fixing and note what was wrong." },
+  { slot: "fixed", name: "DD", detail: "Ensure each active associate has a Direct Deposit or Rapid Card account set up. If nothing is set up, send the task to the associate or send them to a YES branch for a Rapid Card. Paper checks are for emergencies only.", sop: "1. Pull the active list from Avionte Bold: Analyze tab → Active Consultants report → Company: Flex → Date Range: Today.\n2. Open each associate's file and confirm they have either a Direct Deposit account or a Rapid Card set up.\n3. If nothing is set up, either:\n   - Send the Direct Deposit task to the associate to complete, or\n   - Send them to a YES branch to get a Rapid Card.\n   Paper checks are for emergencies only — Direct Deposit and Rapid Card are the standard choices.\n4. Follow up to help them choose a pay method. Never hold back an associate's pay because Direct Deposit or a Rapid Card is not set up.\n5. In the Audit Tracker, enter the Bold ID of each associate without pay set up and note what you sent them or where you sent them." }
 ];
 // Same idea for How-To Guide text: replace only if it still exactly matches an old default.
 const SOP_CONTENT_REFRESH = {
   "W4's": [
-    "1. Open each active associate's W4 in their Avionte Bold file. Pull the active list from the Analyze tab → Active Consultants report → Company: Flex → Date Range: Today.\n2. Confirm it is the 2020 or newer version of the W4.\n3. Step 1 (Personal Information) must be complete:\n   - Full name\n   - Address\n   - Social Security Number\n   - One filing status box checked (Single or Married filing separately, Married filing jointly or Qualifying surviving spouse, or Head of household)\n4. Steps 2, 3, and 4 are optional. Leaving them blank is not an error.\n5. If Step 3 (dependents) is filled in, confirm the amounts are written as numbers and the total is added up.\n6. Step 5 must be signed and dated by the associate. An unsigned W4 is not valid.\n7. Confirm the name and SSN match the associate's I-9.\n8. If anything is missing or wrong, have the associate fill out a new W4. Do not correct it for them.\n9. In the Audit Tracker, enter the Bold ID of any associate whose W4 needed fixing and note what was wrong."
+    "1. Open each active associate's W4 in their Avionte Bold file. Pull the active list from the Analyze tab → Active Consultants report → Company: Flex → Date Range: Today.\n2. Confirm it is the 2020 or newer version of the W4.\n3. Step 1 (Personal Information) must be complete:\n   - Full name\n   - Address\n   - Social Security Number\n   - One filing status box checked (Single or Married filing separately, Married filing jointly or Qualifying surviving spouse, or Head of household)\n4. Steps 2, 3, and 4 are optional. Leaving them blank is not an error.\n5. If Step 3 (dependents) is filled in, confirm the amounts are written as numbers and the total is added up.\n6. Step 5 must be signed and dated by the associate. An unsigned W4 is not valid.\n7. Confirm the name and SSN match the associate's I-9.\n8. If anything is missing or wrong, have the associate fill out a new W4. Do not correct it for them.\n9. In the Audit Tracker, enter the Bold ID of any associate whose W4 needed fixing and note what was wrong.",
+    "1. Open each active associate's W4 in their Avionte Bold file. Pull the active list from the Analyze tab → Active Consultants report → Company: Flex → Date Range: Today.\n2. Confirm it is the 2020 or newer version of the W4.\n3. Step 1 (Personal Information) must be complete:\n   - Full name\n   - Address\n   - Social Security Number\n   - One filing status box checked (Single or Married filing separately, Married filing jointly or Qualifying surviving spouse, or Head of household)\n4. Steps 2, 3, and 4 are optional. Leaving them blank is not an error.\n5. If Step 3 (dependents) is filled in, confirm the amounts are written as numbers and the total is added up.\n6. Step 5 must be signed and dated by the associate. An unsigned W4 is not valid.\n7. If the associate claimed \"Exempt\", confirm the W4 was signed this calendar year. An exempt W4 expires every year on February 15 — if a new one was not turned in by then, withholding must switch to Single (or Married filing separately) with no adjustments until a new W4 is received.\n8. Confirm the name and SSN match the associate's I-9.\n9. If anything is missing or wrong, have the associate fill out a new W4. Do not correct it for them.\n10. In the Audit Tracker, enter the Bold ID of any associate whose W4 needed fixing and note what was wrong."
   ],
   "DD": [
-    "1. Pull the active list from Avionte Bold: Analyze tab → Active Consultants report → Company: Flex → Date Range: Today.\n2. Open each associate's file and confirm they have either a Direct Deposit account or a Rapid Card set up.\n3. If nothing is set up, either:\n   - Send the Direct Deposit task to the associate to complete, or\n   - Send them to a YES branch to get a Rapid Card.\n4. Follow up to help them choose a pay method. Never hold back an associate's pay because Direct Deposit or a Rapid Card is not set up.\n5. In the Audit Tracker, enter the Bold ID of each associate without pay set up and note what you sent them or where you sent them."
+    "1. Pull the active list from Avionte Bold: Analyze tab → Active Consultants report → Company: Flex → Date Range: Today.\n2. Open each associate's file and confirm they have either a Direct Deposit account or a Rapid Card set up.\n3. If nothing is set up, either:\n   - Send the Direct Deposit task to the associate to complete, or\n   - Send them to a YES branch to get a Rapid Card.\n4. Follow up to help them choose a pay method. Never hold back an associate's pay because Direct Deposit or a Rapid Card is not set up.\n5. In the Audit Tracker, enter the Bold ID of each associate without pay set up and note what you sent them or where you sent them.",
+    "1. Pull the active list from Avionte Bold: Analyze tab → Active Consultants report → Company: Flex → Date Range: Today.\n2. Open each associate's file and confirm they have either a Direct Deposit account or a Rapid Card set up.\n3. If nothing is set up, either:\n   - Send the Direct Deposit task to the associate to complete, or\n   - Send them to a YES branch to get a Rapid Card.\n   Paper checks are not an option — Direct Deposit and Rapid Card are the only two choices.\n4. Follow up to help them choose a pay method. Never hold back an associate's pay because Direct Deposit or a Rapid Card is not set up.\n5. In the Audit Tracker, enter the Bold ID of each associate without pay set up and note what you sent them or where you sent them."
   ],
   "Headcount Accuracy": [
     "1. Pull the current Flex headcount from Workday.\n2. Pull the current Flex headcount from Avionte Bold: Analyze tab → Active Consultants report → Company: Flex → Date Range: Today.\n3. Check the current headcount shown on the Flex Dashboard.\n4. Compare the three numbers. If they all match, the audit is complete.\n5. If they do not match, compare the name lists side by side to find which associates are missing or extra in each system.\n6. Common causes:\n   - A termination that was done in one system but not the others\n   - A new hire that was not added everywhere yet\n   - A status in Bold that was not changed to On Assignment, Active, or Inactive\n7. Correct each discrepancy in the system that is wrong.\n8. Re-check the three numbers to confirm they now match.\n9. In the Audit Tracker, enter the Bold ID of each associate you corrected and note what was wrong and where.",
-    "1. In Workday, run the Core HR - Contingent Worker Details report and note the current Flex headcount.\n2. Pull the current Flex headcount from Avionte Bold: Analyze tab → Active Consultants report → Company: Flex → Date Range: Today.\n3. Check the current headcount shown on the Flex Dashboard.\n4. Compare the three numbers. If they all match, the audit is complete.\n5. If they do not match, compare the name lists side by side to find which associates are missing or extra in each system.\n6. Common causes:\n   - A termination that was done in one system but not the others\n   - A new hire that was not added everywhere yet\n   - A status in Bold that was not changed to On Assignment, Active, or Inactive\n7. Correct each discrepancy in the system that is wrong.\n8. Re-check the three numbers to confirm they now match.\n9. In the Audit Tracker, enter the Bold ID of each associate you corrected and note what was wrong and where."
+    "1. In Workday, run the Core HR - Contingent Worker Details report and note the current Flex headcount.\n2. Pull the current Flex headcount from Avionte Bold: Analyze tab → Active Consultants report → Company: Flex → Date Range: Today.\n3. Check the current headcount shown on the Flex Dashboard.\n4. Compare the three numbers. If they all match, the audit is complete.\n5. If they do not match, compare the name lists side by side to find which associates are missing or extra in each system.\n6. Common causes:\n   - A termination that was done in one system but not the others\n   - A new hire that was not added everywhere yet\n   - A status in Bold that was not changed to On Assignment, Active, or Inactive\n7. Correct each discrepancy in the system that is wrong.\n8. Re-check the three numbers to confirm they now match.\n9. In the Audit Tracker, enter the Bold ID of each associate you corrected and note what was wrong and where.",
+    "1. In Workday, run the Core HR - Contingent Worker Details report and note the current Flex headcount.\n2. Pull the current Flex headcount from Avionte Bold: Analyze tab → Active Consultants report → Company: Flex → Date Range: Today.\n3. Check the current headcount shown on the Flex Dashboard.\n4. Compare the Flex Dashboard headcount to the Core HR report headcount. These two must match.\n5. Compare the Avionte Bold headcount to both. If all three numbers match, the audit is complete.\n6. If they do not match, compare the name lists side by side to find which associates are missing or extra in each system.\n7. Common causes:\n   - The latest Core HR report has not been imported into the Flex Dashboard yet (import it the same way as in the New Hire Audit)\n   - A termination that was done in one system but not the others\n   - A new hire that was not added everywhere yet\n   - A status in Bold that was not changed to On Assignment, Active, or Inactive\n8. Correct each discrepancy in the system that is wrong.\n9. Re-check all three numbers to confirm they now match.\n10. In the Audit Tracker, enter the Bold ID of each associate you corrected and note what was wrong and where."
   ],
   "New Hire Audit": [
-    "Box Uploads:\n1. Open Box and go to Agency Materials → New Hire Forms → YES → New Starts (current year).\n2. Confirm there is a folder for each start date from this week. If one is missing, create it, named with the start date.\n3. Confirm every new hire's documents are uploaded in the correct start date folder. Upload anything that is missing.\n\nWorkday Supervisor Transfer:\n4. In Workday, check every new hire who is on their 3rd day of work or later.\n5. Confirm they have been moved from Training Manager to their real supervisor. If not, transfer them.\n\nAvionte Bold File:\n6. Open each new hire's file in Avionte Bold and confirm all of these documents are uploaded:\n   - I-9\n   - W4\n   - DD (Direct Deposit or Rapid Card)\n   - Flex Onboarding\n   - Flex Assignment Acknowledgement Form\n   - Candidate Screening Form\n   - EMT Injury Reporting Agreement\n   - Background Check\n   - Drug Screen\n   - Offer Letter\n7. If anything is missing, leave a note on the associate's Bold file listing what is missing, and follow up until it is fixed.\n\nFlex Dashboard:\n8. In Workday, run the Core HR Contingent Worker report and export it.\n9. Import that report into the Flex Dashboard so the worker list is up to date.\n\n10. In the Audit Tracker, enter the Bold ID of any new hire with missing items and note what was missing and what was done."
+    "Box Uploads:\n1. Open Box and go to Agency Materials → New Hire Forms → YES → New Starts (current year).\n2. Confirm there is a folder for each start date from this week. If one is missing, create it, named with the start date.\n3. Confirm every new hire's documents are uploaded in the correct start date folder. Upload anything that is missing.\n\nWorkday Supervisor Transfer:\n4. In Workday, check every new hire who is on their 3rd day of work or later.\n5. Confirm they have been moved from Training Manager to their real supervisor. If not, transfer them.\n\nAvionte Bold File:\n6. Open each new hire's file in Avionte Bold and confirm all of these documents are uploaded:\n   - I-9\n   - W4\n   - DD (Direct Deposit or Rapid Card)\n   - Flex Onboarding\n   - Flex Assignment Acknowledgement Form\n   - Candidate Screening Form\n   - EMT Injury Reporting Agreement\n   - Background Check\n   - Drug Screen\n   - Offer Letter\n7. If anything is missing, leave a note on the associate's Bold file listing what is missing, and follow up until it is fixed.\n\nFlex Dashboard:\n8. In Workday, run the Core HR Contingent Worker report and export it.\n9. Import that report into the Flex Dashboard so the worker list is up to date.\n\n10. In the Audit Tracker, enter the Bold ID of any new hire with missing items and note what was missing and what was done.",
+    "Box Uploads:\n1. Open Box and go to Agency Materials → New Hire Forms → YES → New Starts (current year).\n2. Confirm there is a folder for each start date from this week. If one is missing, create it, named with the start date.\n3. Confirm every new hire's documents are uploaded in the correct start date folder. Upload anything that is missing.\n\nWorkday Supervisor Transfer:\n4. In Workday, check every new hire who is on their 3rd day of work or later.\n5. Confirm they have been moved from Training Manager to their real supervisor. If not, transfer them.\n\nAvionte Bold File:\n6. Open each new hire's file in Avionte Bold and confirm all of these documents are uploaded:\n   - I-9\n   - W4\n   - DD (Direct Deposit or Rapid Card)\n   - Flex Onboarding\n   - Flex Assignment Acknowledgement Form\n   - Candidate Screening Form\n   - EMT Injury Reporting Agreement\n   - Background Check\n   - Drug Screen\n   - Offer Letter\n7. If anything is missing, leave a note on the associate's Bold file listing what is missing, and follow up until it is fixed.\n\nFlex Dashboard:\n8. In Workday, run the Core HR - Contingent Worker Details report and export it.\n9. Import that report into the Flex Dashboard so the worker list is up to date.\n\n10. In the Audit Tracker, enter the Bold ID of any new hire with missing items and note what was missing and what was done.",
+    "File Uploads:\nWhere files are kept: Flex/Axiom may use Box, SharePoint, OneDrive, or the extranet (Teams), depending on the site and its current process. Always use the one your site uses now.\n1. Open your site's current file location and go to the New Starts folder for the current year (in Box: Agency Materials → New Hire Forms → YES → New Starts (current year)).\n2. Confirm there is a folder for each start date from this week. If one is missing, create it, named with the start date.\n3. Confirm every new hire's documents are uploaded in the correct start date folder. Upload anything that is missing.\n\nWorkday Supervisor Transfer:\n4. In Workday, check every new hire who is on their 3rd day of work or later.\n5. Confirm they have been moved from Training Manager to their real supervisor. If not, transfer them.\n\nAvionte Bold File:\n6. Open each new hire's file in Avionte Bold and confirm all of these documents are uploaded:\n   - I-9\n   - W4\n   - DD (Direct Deposit or Rapid Card)\n   - Flex Onboarding\n   - Flex Assignment Acknowledgement Form\n   - Candidate Screening Form\n   - EMT Injury Reporting Agreement\n   - Background Check\n   - Drug Screen\n   - Offer Letter\n7. If anything is missing, leave a note on the associate's Bold file listing what is missing, and follow up until it is fixed.\n\nFlex Dashboard:\n8. In Workday, run the Core HR - Contingent Worker Details report and export it.\n9. Import that report into the Flex Dashboard so the worker list is up to date.\n\n10. In the Audit Tracker, enter the Bold ID of any new hire with missing items and note what was missing and what was done."
   ],
   "Audit Core HR Report": [
-    "1. In Workday, run the Core HR - Contingent Worker Details report. (This is the same report used for the Headcount Accuracy audit.)\n2. Export it to Excel so you can sort and filter the columns.\n3. For every associate on the report, check that each of these is accurate and not blank:\n   - Light Industrial code\n   - Work area\n   - Primary org\n   - Agency\n   - Work shift\n   - Wage\n   - Pay frequency\n   - Supervisor\n   - Markup\n   - Contingent Kronos ID area\n4. Tip: sort or filter one column at a time. Blanks and values that don't match the rest (for example, a different wage or markup than others in the same job) stand out quickly.\n5. Correct anything that is wrong or blank in Workday.\n6. Re-run the report to confirm your corrections show up.\n7. In the Audit Tracker, enter the Bold ID of each associate you corrected and note which field was wrong and what you changed it to."
+    "1. In Workday, run the Core HR - Contingent Worker Details report. (This is the same report used for the Headcount Accuracy audit.)\n2. Export it to Excel so you can sort and filter the columns.\n3. For every associate on the report, check that each of these is accurate and not blank:\n   - Light Industrial code\n   - Work area\n   - Primary org\n   - Agency\n   - Work shift\n   - Wage\n   - Pay frequency\n   - Supervisor\n   - Markup\n   - Contingent Kronos ID area\n4. Tip: sort or filter one column at a time. Blanks and values that don't match the rest (for example, a different wage or markup than others in the same job) stand out quickly.\n5. Correct anything that is wrong or blank in Workday.\n6. Re-run the report to confirm your corrections show up.\n7. In the Audit Tracker, enter the Bold ID of each associate you corrected and note which field was wrong and what you changed it to.",
+    "1. In Workday, run the Core HR - Contingent Worker Details report. (This is the same report used for the Headcount Accuracy audit.)\n2. Export it to Excel so you can sort and filter the columns.\n3. For every associate on the report, check that each of these is accurate and not blank:\n   - Light Industrial code\n   - Work area\n   - Primary org\n   - Agency\n   - Work shift\n   - Wage\n   - Pay frequency\n   - Supervisor\n   - Markup\n   - Contingent Kronos ID area\n4. What to compare against:\n   - Supervisor, shift, and department → the Req Tracker or Flex Q (Flex Q is imported from the Req Tracker, so they should match)\n   - Wage, pay frequency, markup, Light Industrial code, primary org, agency, and Contingent Kronos ID area → these are the standard values for the Flex account. Anything that doesn't match the account standard is wrong.\n5. Tip: sort or filter one column at a time. Blanks and values that don't match the rest (for example, a different wage or markup than others in the same job) stand out quickly.\n6. Correct anything that is wrong or blank in Workday.\n7. Re-run the report to confirm your corrections show up.\n8. In the Audit Tracker, enter the Bold ID of each associate you corrected and note which field was wrong and what you changed it to."
   ],
   "EAD": [
     "1. Log into Avionte Bold and navigate to the Analyze tab at the top of the screen.\n2. Select the report titled Active Consultants.\n3. In the sidebar, select Company and choose Flex.\n4. Select Date Range and choose Today.\n5. Open each associate's I-9 and check the \"authorized to work until\" date in Section 1. Also check any expiring List A or List C document they showed (for example an Employment Authorization Card / EAD, or a foreign passport with an I-94 arrival/departure record).\n6. Flag anyone whose work authorization expires within the next 30 days.\n7. Important — do NOT ask for new documents from:\n   - U.S. citizens\n   - Permanent residents (green card holders), even if the green card itself is expiring\n   - Anyone whose only expiring document is a List B ID, like a driver's license\n   Asking these associates for new documents is not allowed.\n8. For each flagged associate, contact them right away and ask them to bring in their new or renewed document before it expires. They may show any unexpired document from List A or List C (see the I-9 list of acceptable documents) — do not ask for a specific one.\n9. When they bring it in, complete Supplement B (the reverification page of the I-9) and upload the new document to their Bold file.\n10. If we do not have a new document by the expiration date, tell the Onsite Manager right away. Some work permits are automatically extended (the associate may have a Form I-797C receipt notice), so check with the Onsite Manager before removing anyone. If we still do not have a valid document 3 days after the old one expires, the associate must be removed from the assignment.\n11. In the Audit Tracker, enter the Bold ID of each associate you followed up with and note the expiration date and what was done.",
-    "Shortcut — Expiring Certificates widget (set up once):\n- In Avionte, go to your My Dashboard page.\n- At the top of the page, click Add Widget.\n- Click the green plus sign next to Expiring Certificates.\n- The widget stays on your dashboard from then on. It shows EADs that are expiring and ones that have already expired for all of YES, so look for the Flex associates on it.\nUse the widget to quickly spot who needs follow-up, then work through the steps below.\n\n1. Log into Avionte Bold and navigate to the Analyze tab at the top of the screen.\n2. Select the report titled Active Consultants.\n3. In the sidebar, select Company and choose Flex.\n4. Select Date Range and choose Today.\n5. Open each associate's I-9 and check the \"authorized to work until\" date in Section 1. Also check any expiring List A or List C document they showed (for example an Employment Authorization Card / EAD, or a foreign passport with an I-94 arrival/departure record).\n6. Flag anyone whose work authorization expires within the next 30 days.\n7. Important — do NOT ask for new documents from:\n   - U.S. citizens\n   - Permanent residents (green card holders), even if the green card itself is expiring\n   - Anyone whose only expiring document is a List B ID, like a driver's license\n   Asking these associates for new documents is not allowed.\n8. For each flagged associate, contact them right away and ask them to bring in their new or renewed document before it expires. They may show any unexpired document from List A or List C (see the I-9 list of acceptable documents) — do not ask for a specific one.\n9. When they bring it in, complete Supplement B (the reverification page of the I-9) and upload the new document to their Bold file.\n10. If we do not have a new document by the expiration date, tell the Onsite Manager right away. Some work permits are automatically extended (the associate may have a Form I-797C receipt notice), so check with the Onsite Manager before removing anyone. If we still do not have a valid document 3 days after the old one expires, the associate must be removed from the assignment.\n11. In the Audit Tracker, enter the Bold ID of each associate you followed up with and note the expiration date and what was done."
+    "Shortcut — Expiring Certificates widget (set up once):\n- In Avionte, go to your My Dashboard page.\n- At the top of the page, click Add Widget.\n- Click the green plus sign next to Expiring Certificates.\n- The widget stays on your dashboard from then on. It shows EADs that are expiring and ones that have already expired for all of YES, so look for the Flex associates on it.\nUse the widget to quickly spot who needs follow-up, then work through the steps below.\n\n1. Log into Avionte Bold and navigate to the Analyze tab at the top of the screen.\n2. Select the report titled Active Consultants.\n3. In the sidebar, select Company and choose Flex.\n4. Select Date Range and choose Today.\n5. Open each associate's I-9 and check the \"authorized to work until\" date in Section 1. Also check any expiring List A or List C document they showed (for example an Employment Authorization Card / EAD, or a foreign passport with an I-94 arrival/departure record).\n6. Flag anyone whose work authorization expires within the next 30 days.\n7. Important — do NOT ask for new documents from:\n   - U.S. citizens\n   - Permanent residents (green card holders), even if the green card itself is expiring\n   - Anyone whose only expiring document is a List B ID, like a driver's license\n   Asking these associates for new documents is not allowed.\n8. For each flagged associate, contact them right away and ask them to bring in their new or renewed document before it expires. They may show any unexpired document from List A or List C (see the I-9 list of acceptable documents) — do not ask for a specific one.\n9. When they bring it in, complete Supplement B (the reverification page of the I-9) and upload the new document to their Bold file.\n10. If we do not have a new document by the expiration date, tell the Onsite Manager right away. Some work permits are automatically extended (the associate may have a Form I-797C receipt notice), so check with the Onsite Manager before removing anyone. If we still do not have a valid document 3 days after the old one expires, the associate must be removed from the assignment.\n11. In the Audit Tracker, enter the Bold ID of each associate you followed up with and note the expiration date and what was done.",
+    "Shortcut — Expiring Certificates widget (set up once):\n- In Avionte, go to your My Dashboard page.\n- At the top of the page, click Add Widget.\n- Click the green plus sign next to Expiring Certificates.\n- The widget stays on your dashboard from then on. It shows EADs that are expiring and ones that have already expired for all of YES, so look for the Flex associates on it.\nUse the widget to quickly spot who needs follow-up, then work through the steps below.\n\n1. Log into Avionte Bold and navigate to the Analyze tab at the top of the screen.\n2. Select the report titled Active Consultants.\n3. In the sidebar, select Company and choose Flex.\n4. Select Date Range and choose Today.\n5. Open each associate's profile and go to the Certificates tab. View the ID on file and its expiration date.\n6. Important — do NOT ask for new documents from:\n   - U.S. citizens\n   - Permanent residents (green card holders), even if the green card itself is expiring\n   - Anyone whose only expiring document is a List B ID, like a driver's license\n   Asking these associates for new documents is not allowed.\n7. If the ID is close to expiring (within the next 30 days), notify the associate and collect new documentation before it expires. They may show any unexpired document from List A or List C (see the I-9 list of acceptable documents) — do not ask for a specific one.\n8. If the ID has already expired, we need to collect a new one within 3 days. Tell the Onsite Manager right away. Some work permits are automatically extended (the associate may have a Form I-797C receipt notice), so check with the Onsite Manager before removing anyone. If we still do not have a valid document 3 days after the old one expires, the associate must be removed from the assignment.\n9. Once you have the new ID:\n   - Upload it to the associate's Certificates tab.\n   - Edit the certificate: add the new ID and update the required fields (like the expiration date) to match the new document.\n   - Complete Supplement B (the reverification page of the I-9).\n10. In the Audit Tracker, enter the Bold ID of each associate you followed up with and note the expiration date and what was done."
   ],
   "Audit Prep List": [
     "1. Open the Prep List spreadsheet.\n2. Start at the top and work through every associate on the list.\n3. Call or text each associate and ask if they are still interested in waiting for a position at Flex.\n4. If they are NOT still interested, delete their row from the Prep List.\n5. If they ARE still interested:\n   - Add 1 to the column showing how many times we have contacted them.\n   - Update the Last Contacted date column to today's date.\n6. If you could not reach them, still update the contact count and Last Contacted date, and leave a short note that there was no answer.\n7. In the Audit Tracker, enter notes describing what was completed (for example: how many associates were contacted and how many were removed).",
-    "1. Open the Prep List spreadsheet.\n2. Start at the top and work through every associate on the list.\n3. Check whether each associate has attended a Mini Orientation. Everyone on the Prep List should have attended one.\n4. Call or text each associate and ask if they are still interested in waiting for a position at Flex.\n5. If they are NOT still interested, delete their row from the Prep List.\n6. If they ARE still interested:\n   - Add 1 to the column showing how many times we have contacted them.\n   - Update the Last Contacted date column to today's date.\n   - If they have been prepped but have NOT attended a Mini Orientation, ask them to attend the next one.\n7. If you could not reach them, still update the contact count and Last Contacted date, and leave a short note that there was no answer (and that they still need a Mini Orientation, if they do).\n8. In the Audit Tracker, enter notes describing what was completed (for example: how many associates were contacted, how many were removed, and how many still need a Mini Orientation)."
+    "1. Open the Prep List spreadsheet.\n2. Start at the top and work through every associate on the list.\n3. Check whether each associate has attended a Mini Orientation. Everyone on the Prep List should have attended one.\n4. Call or text each associate and ask if they are still interested in waiting for a position at Flex.\n5. If they are NOT still interested, delete their row from the Prep List.\n6. If they ARE still interested:\n   - Add 1 to the column showing how many times we have contacted them.\n   - Update the Last Contacted date column to today's date.\n   - If they have been prepped but have NOT attended a Mini Orientation, ask them to attend the next one.\n7. If you could not reach them, still update the contact count and Last Contacted date, and leave a short note that there was no answer (and that they still need a Mini Orientation, if they do).\n8. In the Audit Tracker, enter notes describing what was completed (for example: how many associates were contacted, how many were removed, and how many still need a Mini Orientation).",
+    "1. Open the Prep List spreadsheet.\n2. Start at the top and work through every associate on the list.\n3. Check whether each associate has attended a Mini Orientation. Everyone on the Prep List should have attended one.\n4. Call or text each associate and ask if they are still interested in waiting for a position at Flex.\n5. If they are NOT still interested, delete their row from the Prep List.\n6. If they ARE still interested:\n   - Add 1 to the column showing how many times we have contacted them.\n   - Update the Last Contacted date column to today's date.\n   - If they have been prepped but have NOT attended a Mini Orientation, ask them to attend the next one and add them to the Mini Orientation tab in Flex Q.\n7. If you could not reach them, still update the contact count and Last Contacted date, and leave a short note that there was no answer (and that they still need a Mini Orientation, if they do).\n8. In the Audit Tracker, enter notes describing what was completed (for example: how many associates were contacted, how many were removed, and how many still need a Mini Orientation).",
+    "Where files are kept: Flex/Axiom may use Box, SharePoint, OneDrive, or the extranet (Teams), depending on the site and its current process. Always use the one your site uses now.\n\n1. Open the Prep List spreadsheet.\n2. Start at the top and work through every associate on the list.\n3. Check whether each associate has attended a Mini Orientation. Everyone on the Prep List should have attended one.\n4. Call or text each associate and ask if they are still interested in waiting for a position at Flex.\n5. If they are NOT still interested, delete their row from the Prep List.\n6. If they ARE still interested:\n   - Add 1 to the column showing how many times we have contacted them.\n   - Update the Last Contacted date column to today's date.\n   - If they have been prepped but have NOT attended a Mini Orientation, ask them to attend the next one and add them to the Mini Orientation tab in Flex Q.\n7. If you could not reach them, still update the contact count and Last Contacted date, and leave a short note that there was no answer (and that they still need a Mini Orientation, if they do).\n8. In the Audit Tracker, enter notes describing what was completed (for example: how many associates were contacted, how many were removed, and how many still need a Mini Orientation)."
+  ],
+  "Terminations 100% Complete": [
+    "1. In Workday, run the Terminations report for this week.\n2. For every name on the report, complete steps 3 through 7.\n3. Find the associate in Avionte Bold. Confirm they are fully termed and their status is no longer On Assignment:\n   - Still looking for work → Active\n   - Found a job elsewhere or not returning → Inactive\n4. To change the status: open the associate's profile, hover over their picture in the top left, click the edit button (pencil and notepad), choose Talent Status, change it, and click the blue save icon.\n5. Open the End of Assignment sheet in Box and confirm the termination was entered there.\n6. Open the Flex Master Dashboard and confirm the termination was entered there.\n7. Confirm the email was sent to security to deactivate the associate's badge. If it was not sent, send it now.\n8. In the Audit Tracker, enter the Bold ID of any associate where something was missing and note what you fixed.",
+    "Where files are kept: Flex/Axiom may use Box, SharePoint, OneDrive, or the extranet (Teams), depending on the site and its current process. Always use the one your site uses now.\n\n1. In Workday, run the Terminations report for this week.\n2. For every name on the report, complete steps 3 through 7.\n3. Find the associate in Avionte Bold. Confirm they are fully termed and their status is no longer On Assignment:\n   - Still looking for work → Active\n   - Found a job elsewhere or not returning → Inactive\n4. To change the status: open the associate's profile, hover over their picture in the top left, click the edit button (pencil and notepad), choose Talent Status, change it, and click the blue save icon.\n5. Open the End of Assignment sheet in your site's current file location and confirm the termination was entered there.\n6. Open the Flex Master Dashboard and confirm the termination was entered there.\n7. Confirm the email was sent to security to deactivate the associate's badge. If it was not sent, send it now.\n8. In the Audit Tracker, enter the Bold ID of any associate where something was missing and note what you fixed.",
+    "Where files are kept: Flex/Axiom may use Box, SharePoint, OneDrive, or the extranet (Teams), depending on the site and its current process. Always use the one your site uses now.\n\n1. In Workday, run the Terminations report for this week.\n2. For every name on the report, complete steps 3 through 8.\n3. Find the associate in Avionte Bold and confirm they are fully termed.\n4. If they are not fully termed, term them now:\n   - Open their assignment and enter their last day worked as the End Date. Save it.\n   - Go to their Logged Activity and leave a note marked \"Termination\".\n5. Confirm their status is no longer On Assignment:\n   - Still looking for work → Active\n   - Found a job elsewhere or not returning → Inactive\n   To change the status: open the associate's profile, hover over their picture in the top left, click the edit button (pencil and notepad), choose Talent Status, change it, and click the blue save icon.\n6. Open the End of Assignment sheet in your site's current file location and confirm the termination was entered there.\n7. Open the Flex Master Dashboard and confirm the termination was entered there.\n8. Confirm the email was sent to security to deactivate the associate's badge. If it was not sent, send it now.\n9. In the Audit Tracker, enter the Bold ID of any associate where something was missing and note what you fixed."
+  ],
+  "Absenteeism Tracker & Employee SSN Tab on Payroll Tracker": [
+    "Absenteeism Tracker:\n1. Open the Absenteeism Tracker and go to the prior week.\n2. Confirm every row for that week has all required columns filled in.\n3. Look for notes like \"pending supervisor approval\" or anything else that is not final.\n\nEmployee SSN Tab on Payroll Tracker:\n4. Open the Payroll Tracker and go to the Employee SSN tab.\n5. Confirm every row for the prior week is completely filled out.\n\nFollow Up:\n6. For anything incomplete or pending, reach out to the person who entered it and ask them to update it and let you know once it's done.\n7. Once they confirm, re-check that it was actually updated.\n8. In the Audit Tracker, enter notes describing what was incomplete and who you followed up with.",
+    "Where files are kept: Flex/Axiom may use Box, SharePoint, OneDrive, or the extranet (Teams), depending on the site and its current process. Always use the one your site uses now.\n\nAbsenteeism Tracker:\n1. Open the Absenteeism Tracker and go to the prior week.\n2. Confirm every row for that week has all required columns filled in.\n3. Look for notes like \"pending supervisor approval\" or anything else that is not final.\n\nEmployee SSN Tab on Payroll Tracker:\n4. Open the Payroll Tracker and go to the Employee SSN tab.\n5. Confirm every row for the prior week is completely filled out.\n\nFollow Up:\n6. For anything incomplete or pending, reach out to the person who entered it and ask them to update it and let you know once it's done.\n7. Once they confirm, re-check that it was actually updated.\n8. In the Audit Tracker, enter notes describing what was incomplete and who you followed up with."
+  ],
+  "Bold Status": [
+    "1. Log into Avionte Bold and navigate to the Analyze tab at the top of the screen.\n2. Select the report titled Active Consultants.\n3. In the sidebar, select Company and choose Flex.\n4. Select Date Range and choose Today.\n5. Make sure that in your filters, Talent Status is selected.\n6. Review all the talent statuses. All should say On Assignment.\n7. If they do not, go into that associate and change the status:\n   - Still employed at Flex → On Assignment\n   - No longer employed at Flex, still looking for work → Active\n   - No longer employed at Flex, found a job elsewhere → Inactive\n8. To change the status: go into the associate's profile, hover your mouse over their picture in the top left, and select the edit button (looks like a pencil and notepad).\n9. Choose Talent Status, change the status, and click the blue save icon when finished.\n10. In the Audit Tracker, enter the associate's Bold ID that you changed and enter notes describing what was completed."
+  ],
+  "I-9's": [
+    "Section 1 — Employee Information and Attestation:\n1. Confirm the name is in the correct order and matches the ID document presented — as much of the employee's legal name as the system allows.\n2. Confirm the address is a current, valid physical address that makes sense for the job assignment. Double-check anything listing an out-of-state address for accuracy.\n3. Confirm the Date of Birth matches the ID presented.\n4. Confirm the Social Security Number is valid — do not accept invalid SSNs.\n5. Confirm exactly one citizenship/immigration status box is checked:\n   - If box 3 (lawful permanent resident) is checked, confirm the USCIS or A-Number is filled in.\n   - If box 4 (noncitizen authorized to work until) is checked, confirm the expiration date is filled in if the document has one — do not accept a default 'n/a'.\n   - Confirm any A-Numbers entered are valid.\n6. Note: Middle Initial, Other Names Used, Email, and Phone Number are NOT required fields — they can be complete, partial, or blank. Do not flag these as errors.\n\nSection 2 — Employer Review and Verification:\n7. Confirm the document(s) listed match what was actually presented — Title, Issuing Authority, Document #, and Expiration Date.\n8. Confirm expiration dates are only filled in when the document itself lists one — should be left blank if the document doesn't expire.\n9. If a List A document is an I-94, confirm it was presented together with an unexpired foreign passport.\n10. If a List C document is an I-94 presented without a foreign passport, confirm a List B ID was also collected.\n11. Confirm the First Day of Employment matches the date the associate was entered into the applicant pool.\n12. If anything was corrected, confirm no white-out was used — the correct method is a single line drawn through the incorrect/missing information, with the correction entered and initialed and dated in the Additional Information/Notes section.\n\nAcceptable Documents (List A / B / C):\n13. Confirm the documentation presented is an acceptable combination: one selection from List A, OR one from List B AND one from List C.\n14. All documents with an expiration date must be unexpired (unless extended by the issuing authority).\n15. If a receipt was presented instead of an original document, confirm it's a valid receipt type (replacement for a lost/stolen/damaged List A, B, or C document, or a qualifying I-94/refugee stamp) and check the M-274 for receipt validity dates.\n\n16. Once reviewed, enter the associate's Bold ID and your audit notes (what was checked, any corrections made) in the Audit Tracker."
   ]
 };
 
@@ -691,6 +740,9 @@ const DAY_MS = 86400000;
 const RECENT_HISTORY_WEEKS = 4;
 const OVERDUE_LIST_LIMIT = 8;
 const PASS_RATE_WEEKS = 8;
+const MAX_WEEK = 5200;
+const MAX_IMPORT_BYTES = 5 * 1024 * 1024;
+const SAVE_BLOCKED_MSG = "To protect your original data, saving is paused. Click Download a Copy of My Data, send the file to your manager, and don't record anything until it's fixed.";
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
 let state = null;
@@ -708,6 +760,11 @@ let noteTarget = null;
 let legendTarget = null;
 let pendingImport = null;
 let pendingResultChange = null;
+// Set when saved data couldn't be safely copied; saving would overwrite the only original.
+let saveBlocked = false;
+let reassignTarget = null;
+// Past Weeks year sections the user opened; null = only the newest year is open.
+let openHistoryYears = null;
 
 // Null-prototype maps so user-typed keys like "constructor" or "__proto__" are plain data.
 function dict(){ return Object.create(null); }
@@ -831,6 +888,15 @@ function sanitizeResult(val){
   return isEmptyResult(r) ? null : r;
 }
 
+// A raw entry that held nothing (so dropping it loses no data, and needs no damaged copy).
+function isBlankRawResult(val){
+  if(val === null || val === undefined || val === "") return true;
+  if(!isPlainObject(val)) return false;
+  const hasText = v => typeof v === "string" && v.trim() !== "";
+  return !val.status && !val.verified && !hasText(val.note) && !hasText(val.boldId)
+    && !(Array.isArray(val.boldIds) && val.boldIds.some(hasText));
+}
+
 function migrateLegendKeys(map){
   Object.keys(LEGEND_NAME_MIGRATIONS).forEach(oldName => {
     if(own(map, oldName) === undefined) return;
@@ -890,7 +956,7 @@ function sanitizeState(parsed){
     Object.keys(parsed.results).forEach(wkKey => {
       const wk = Number(wkKey);
       const weekRaw = parsed.results[wkKey];
-      if(!Number.isInteger(wk) || wk < 1 || !isPlainObject(weekRaw)){ dropped++; return; }
+      if(!Number.isInteger(wk) || wk < 1 || wk > MAX_WEEK || !isPlainObject(weekRaw)){ dropped++; return; }
       const week = dict();
       const keys = Object.keys(weekRaw);
       const isOldName = k => legacy && own(NAME_MIGRATIONS, k) !== undefined;
@@ -900,7 +966,7 @@ function sanitizeState(parsed){
         if(own(week, key) !== undefined) return;
         const r = sanitizeResult(weekRaw[person]);
         if(r) week[key] = r;
-        else if(weekRaw[person] !== null && !isPlainObject(weekRaw[person]) && typeof weekRaw[person] !== "string") dropped++;
+        else if(!isBlankRawResult(weekRaw[person])) dropped++;
       });
       if(Object.keys(week).length){
         results[wk] = week;
@@ -914,10 +980,32 @@ function sanitizeState(parsed){
     Object.keys(parsed.weekSnapshots).forEach(wkKey => {
       const wk = Number(wkKey);
       const rows = parsed.weekSnapshots[wkKey];
-      if(!Number.isInteger(wk) || wk < 1 || !Array.isArray(rows)){ dropped++; return; }
+      if(!Number.isInteger(wk) || wk < 1 || wk > MAX_WEEK || !Array.isArray(rows)){ dropped++; return; }
       const clean = rows.filter(r => isPlainObject(r) && typeof r.person === "string" && typeof r.audit === "string")
         .map(r => ({ person: r.person, audit: r.audit, fixed: r.fixed === true }));
       if(clean.length) weekSnapshots[wk] = clean;
+    });
+  }
+
+  const reassignments = dict();
+  if(isPlainObject(parsed.reassignments)){
+    Object.keys(parsed.reassignments).forEach(wkKey => {
+      const wk = Number(wkKey);
+      const raw = parsed.reassignments[wkKey];
+      if(!Number.isInteger(wk) || wk < 1 || wk > MAX_WEEK || !isPlainObject(raw)){ dropped++; return; }
+      const week = dict();
+      Object.keys(raw).forEach(person => {
+        const c = raw[person];
+        if(isPlainObject(c) && typeof c.to === "string" && c.to.trim()){
+          week[person] = {
+            to: c.to.trim(),
+            reason: typeof c.reason === "string" ? c.reason.trim() : "",
+            by: typeof c.by === "string" ? c.by : "",
+            at: typeof c.at === "string" ? c.at : ""
+          };
+        } else dropped++;
+      });
+      if(Object.keys(week).length) reassignments[wk] = week;
     });
   }
 
@@ -938,11 +1026,21 @@ function sanitizeState(parsed){
   // Older saves only had a week counter. Anchor it so the latest week in use is "this week".
   const thisMonday = mondayOf(todayIso());
   let fallbackStart = thisMonday;
-  if(legacy || typeof parsed.config.weekOneStart !== "string"){
-    const savedWeek = Number.isInteger(parsed.currentWeek) && parsed.currentWeek > 0 ? parsed.currentWeek : 1;
+  if(legacy || isNaN(isoToUtc(parsed.config.weekOneStart))){
+    const savedWeek = Number.isInteger(parsed.currentWeek) && parsed.currentWeek > 0 && parsed.currentWeek <= MAX_WEEK ? parsed.currentWeek : 1;
     fallbackStart = addDays(thisMonday, -(Math.max(savedWeek, latestRecorded) - 1) * 7);
   }
   const config = normalizeConfig(parsed.config, fallbackStart);
+
+  // The fixed row can't be reassigned, and a role can't cover itself.
+  Object.keys(reassignments).forEach(wk => {
+    const week = reassignments[wk];
+    Object.keys(week).forEach(person => {
+      const lower = person.toLowerCase();
+      if(person === config.fixedPerson || week[person].to.toLowerCase() === lower){ delete week[person]; dropped++; }
+    });
+    if(!Object.keys(week).length) delete reassignments[wk];
+  });
 
   if(legacy){
     LEGEND_ITEMS.forEach(item => {
@@ -953,7 +1051,7 @@ function sanitizeState(parsed){
 
   if(!(parsed.version >= 3)) migrateEverifyToCoreHr(config, results, weekSnapshots, auditDetails, sopDetails);
 
-  return { state: { version: 3, results, weekSnapshots, auditDetails, sopDetails, config }, dropped };
+  return { state: { version: 3, results, weekSnapshots, reassignments, auditDetails, sopDetails, config }, dropped };
 }
 
 function freshState(){
@@ -963,7 +1061,7 @@ function freshState(){
     auditDetails[item.name] = item.detail;
     if(item.sop) sopDetails[item.name] = item.sop;
   });
-  return { version: 3, results: dict(), weekSnapshots: dict(), auditDetails, sopDetails, config: defaultConfig() };
+  return { version: 3, results: dict(), weekSnapshots: dict(), reassignments: dict(), auditDetails, sopDetails, config: defaultConfig() };
 }
 
 function loadState(){
@@ -984,7 +1082,8 @@ function loadState(){
         showError(`Some saved entries were damaged and couldn't be shown (${dropped} skipped). Everything else loaded normally, and a copy of the original data was kept in this browser. Please tell your manager.`);
         saveState();
       } else {
-        showError(`Some saved entries were damaged and couldn't be shown (${dropped} skipped). The original data has been left untouched for now — tell your manager before recording anything, and download a backup from Edit Setup.`);
+        saveBlocked = true;
+        showError(`Some saved entries were damaged and couldn't be shown (${dropped} skipped). ${SAVE_BLOCKED_MSG}`, "save-blocked");
       }
       return;
     }
@@ -992,13 +1091,20 @@ function loadState(){
   } catch(e){
     const kept = writeStorage(STORAGE_KEY + "-unreadable-copy-" + Date.now(), raw);
     state = freshState();
-    showError(kept
-      ? "Your saved tracker data couldn't be read, so the tracker started fresh. A copy of the old data was kept in this browser. Tell your manager before entering new results so it can be recovered — or restore a backup file from Edit Setup."
-      : "Your saved tracker data couldn't be read, so the tracker started fresh. Tell your manager right away, and restore a backup file from Edit Setup if you have one.");
+    if(kept){
+      showError("Your saved tracker data couldn't be read, so the tracker started fresh. A copy of the old data was kept in this browser. Tell your manager before entering new results so it can be recovered — or restore a backup file from Edit Setup.");
+    } else {
+      saveBlocked = true;
+      showError(`Your saved tracker data couldn't be read. ${SAVE_BLOCKED_MSG}`, "save-blocked");
+    }
   }
 }
 
 function saveState(){
+  if(saveBlocked){
+    showError(`Nothing was saved. ${SAVE_BLOCKED_MSG}`, "save-blocked");
+    return false;
+  }
   if(!writeStorage(STORAGE_KEY, JSON.stringify(state))){
     showError("Couldn't save on this computer — the browser's storage may be full or turned off. Keep this tab open and tell your manager so nothing is lost.");
     return false;
@@ -1037,6 +1143,8 @@ function assignmentsForWeek(weekNumber){
 }
 
 function weekResults(wk){ return own(state.results, wk) || dict(); }
+function reassignmentFor(wk, person){ return own(own(state.reassignments, wk), person) || null; }
+function coverText(c){ return c ? `Covered by ${c.to}${c.reason ? " (" + c.reason + ")" : ""}` : ""; }
 
 // ---------- Small UI helpers ----------
 
@@ -1062,6 +1170,7 @@ function showError(msg, kind){
   const bar = document.getElementById("errorBar");
   document.getElementById("errorText").textContent = msg;
   bar.dataset.kind = kind || "";
+  document.getElementById("errorExport").hidden = kind !== "save-blocked";
   bar.hidden = false;
 }
 
@@ -1235,7 +1344,7 @@ function overdueWeeks(){
     const res = weekResults(wk);
     const missing = sortForDisplay(assignmentsForWeek(wk))
       .filter(a => { const r = own(res, a.person); return !r || !r.status; })
-      .map(a => a.person);
+      .map(a => { const c = reassignmentFor(wk, a.person); return c ? `${a.person} (covered by ${c.to})` : a.person; });
     if(missing.length) list.push({ week: wk, missing });
   }
   return list;
@@ -1262,44 +1371,77 @@ function overdueHtml(){
     </section>`;
 }
 
+function weekYear(wk){ return weekStart(wk).slice(0, 4); }
+
+function isYearOpen(year, newestYear){ return openHistoryYears ? openHistoryYears.has(year) : year === newestYear; }
+
+function toggleHistoryYear(year, newestYear){
+  if(!openHistoryYears) openHistoryYears = new Set([newestYear]);
+  if(openHistoryYears.has(year)) openHistoryYears.delete(year); else openHistoryYears.add(year);
+  render();
+  focusByKey("year:" + year);
+}
+
 function historyHtml(){
   const weekNumbers = Object.keys(state.results).map(Number).filter(wk => wk !== viewWeek).sort((a,b) => b - a);
   if(!weekNumbers.length) return "";
-  const visible = showOlderWeeks ? weekNumbers : weekNumbers.slice(0, RECENT_HISTORY_WEEKS);
+  let body;
+  if(showOlderWeeks){
+    const years = [];
+    weekNumbers.forEach(wk => {
+      const y = weekYear(wk);
+      if(!years.length || years[years.length - 1].year !== y) years.push({ year: y, weeks: [] });
+      years[years.length - 1].weeks.push(wk);
+    });
+    const newestYear = years[0].year;
+    body = years.map(({year, weeks}) => {
+      const open = isYearOpen(year, newestYear);
+      return `
+        <button type="button" class="history-year" data-action="toggle-year" data-year="${year}" data-newest="${newestYear}" data-focus-key="year:${year}" aria-expanded="${open}">
+          <span aria-hidden="true">${open ? "▾" : "▸"}</span> ${year} <span class="history-year-count">· ${weeks.length} week${weeks.length === 1 ? "" : "s"}</span>
+        </button>
+        ${open ? weeks.map(historyBlockHtml).join("") : ""}`;
+    }).join("");
+  } else {
+    body = weekNumbers.slice(0, RECENT_HISTORY_WEEKS).map(historyBlockHtml).join("");
+  }
   return `
     <section class="history" aria-labelledby="historyHeading">
       <h2 class="panel-heading" id="historyHeading">Past Weeks — click a week to open it</h2>
       <div class="card-panel">
-        ${visible.map(wk => {
-          const res = weekResults(wk);
-          const assignments = sortForDisplay(assignmentsForWeek(wk));
-          const recorded = assignments.filter(a => own(res, a.person));
-          const pending = assignments.filter(a => { const r = own(res, a.person); return !r || !r.status; }).length;
-          return `
-            <div class="history-block">
-              <button type="button" class="history-week" data-action="jump-week" data-week="${wk}" data-focus-key="hist:${wk}">${escapeHtml(weekLabel(wk))}</button>
-              ${recorded.map(({person, audit}) => {
-                const r = own(res, person);
-                const statusClass = r.status === "Pass" ? "pass" : r.status === "Fail" ? "fail" : "pending";
-                const statusText = r.status === "Pass" ? "Pass" : r.status === "Fail" ? "Fail" : "No result";
-                return `
-                  <div class="history-row">
-                    <span class="h-person">${escapeHtml(person)}</span>
-                    <span class="h-audit">${escapeHtml(audit)}</span>
-                    <span class="h-result ${statusClass}">${statusText}${r.status === "Fail" ? (r.correctedAt ? ' <span class="h-corrected">· Corrected</span>' : ' <span class="h-uncorrected">· Not corrected</span>') : ''}${r.verified ? ' <span class="h-verified">+ Verified</span>' : ''}</span>
-                  </div>
-                  ${r.boldIds.length ? `<div class="h-note"><strong>Bold IDs:</strong> ${escapeHtml(r.boldIds.join(", "))}</div>` : ''}
-                  ${r.note.trim() ? `<div class="h-note">${escapeHtml(r.note.trim())}</div>` : ''}`;
-              }).join("")}
-              ${pending ? `<div class="h-pending">${pending} audit${pending === 1 ? "" : "s"} with no Pass or Fail</div>` : ""}
-            </div>`;
-        }).join("")}
+        ${body}
       </div>
       ${weekNumbers.length > RECENT_HISTORY_WEEKS ? `
         <div class="history-more">
-          <button type="button" class="btn-ghost btn-small" data-action="toggle-older" data-focus-key="toggle-older">${showOlderWeeks ? "Show Only Recent Weeks" : `Show All ${weekNumbers.length} Past Weeks`}</button>
+          <button type="button" class="btn-ghost btn-small" data-action="toggle-older" data-focus-key="toggle-older">${showOlderWeeks ? "Show Only Recent Weeks" : `Show All ${weekNumbers.length} Past Weeks (by year)`}</button>
         </div>` : ""}
     </section>`;
+}
+
+function historyBlockHtml(wk){
+  const res = weekResults(wk);
+  const assignments = sortForDisplay(assignmentsForWeek(wk));
+  const recorded = assignments.filter(a => own(res, a.person));
+  const pending = assignments.filter(a => { const r = own(res, a.person); return !r || !r.status; }).length;
+  return `
+    <div class="history-block">
+      <button type="button" class="history-week" data-action="jump-week" data-week="${wk}" data-focus-key="hist:${wk}">${escapeHtml(weekLabel(wk))}</button>
+      ${recorded.map(({person, audit}) => {
+        const r = own(res, person);
+        const cover = reassignmentFor(wk, person);
+        const statusClass = r.status === "Pass" ? "pass" : r.status === "Fail" ? "fail" : "pending";
+        const statusText = r.status === "Pass" ? "Pass" : r.status === "Fail" ? "Fail" : "No result";
+        return `
+          <div class="history-row">
+            <span class="h-person">${escapeHtml(person)}${cover ? ` <span class="h-cover">covered by ${escapeHtml(cover.to)}</span>` : ""}</span>
+            <span class="h-audit">${escapeHtml(audit)}</span>
+            <span class="h-result ${statusClass}">${statusText}${r.status === "Fail" ? (r.correctedAt ? ' <span class="h-corrected">· Corrected</span>' : ' <span class="h-uncorrected">· Not corrected</span>') : ''}${r.verified ? ' <span class="h-verified">+ Verified</span>' : ''}</span>
+          </div>
+          ${r.boldIds.length ? `<div class="h-note"><strong>Bold IDs:</strong> ${escapeHtml(r.boldIds.join(", "))}</div>` : ''}
+          ${r.note.trim() ? `<div class="h-note">${escapeHtml(r.note.trim())}</div>` : ''}`;
+      }).join("")}
+      ${pending ? `<div class="h-pending">${pending} audit${pending === 1 ? "" : "s"} with no Pass or Fail</div>` : ""}
+    </div>`;
 }
 
 function legendHtml(){
@@ -1346,12 +1488,14 @@ function renderTrackerView(){
       `<button type="button" class="a-chip ${extraClass || ''} ${on ? 'on ' + onClass : ''}" aria-pressed="${on}"${ariaLabel ? ` aria-label="${ariaLabel}"` : ''} data-action="result" data-person="${p}" data-type="${type}" data-focus-key="${escapeHtml(`chip:${person}:${type}`)}">${label}</button>`;
     const stamp = r.at ? `Last updated${r.by ? " by " + escapeHtml(r.by) : ""} · ${escapeHtml(formatStamp(r.at))}` : "";
     const correction = correctionText(r);
+    const cover = fixed ? null : reassignmentFor(wk, person);
     return `
       <div class="a-row ${fixed ? 'fixed' : ''}">
         <div class="a-avatar" aria-hidden="true">${fixed ? "ALL" : escapeHtml(initials(person))}</div>
         <div class="a-body">
           <div class="a-name">${p}${fixed ? ' <span class="a-fixed-tag">· every week</span>' : ''}</div>
           <div class="a-audit">${escapeHtml(audit)}</div>
+          ${cover ? `<div class="a-cover">Covered by <strong>${escapeHtml(cover.to)}</strong>${cover.reason ? " · " + escapeHtml(cover.reason) : ""}</div>` : ''}
           ${stamp ? `<div class="a-stamp">${stamp}</div>` : ''}
           ${correction ? `<div class="a-stamp ${r.correctedAt ? '' : 'uncorrected'}">${escapeHtml(correction)}</div>` : ''}
         </div>
@@ -1359,8 +1503,9 @@ function renderTrackerView(){
           ${chip("Pass", "Pass", "pass", r.status === "Pass")}
           ${chip("Fail", "Fail", "fail", r.status === "Fail")}
           ${chip("Manager Verified", "Manager Verified", "verified", r.verified)}
-          ${r.status === "Fail" ? chip("Corrected", r.correctedAt ? "Corrected" : "Mark Corrected", "corrected", !!r.correctedAt, "correct-btn", "Mark Corrected") : ''}
+          ${r.status === "Fail" ? chip("Corrected", r.correctedAt ? "Corrected" : "Mark Corrected", "corrected", !!r.correctedAt, "correct-btn") : ''}
           <button type="button" class="a-chip note-btn ${hasNote ? 'has-note' : ''}" data-action="open-note" data-person="${p}" data-focus-key="${escapeHtml("note:" + person)}">${hasNote ? 'View Note' : 'Add Note / Bold ID'}</button>
+          ${editMode && !fixed ? `<button type="button" class="a-chip reassign-btn" data-action="open-reassign" data-person="${p}" data-focus-key="${escapeHtml("reassign:" + person)}">${cover ? "Change Reassignment" : "Reassign"}</button>` : ''}
         </div>
       </div>`;
   }).join("");
@@ -1518,7 +1663,7 @@ function openNoteEditor(person){
   const initialNote = r.note;
   openModal(modalShell("noteTitle", `
     <h3 id="noteTitle">${escapeHtml(person)} — ${escapeHtml(assignment ? assignment.audit : "Audit")}</h3>
-    <div class="modal-sub">${escapeHtml(weekLabel(wk))}</div>
+    <div class="modal-sub">${escapeHtml(weekLabel(wk))}${reassignmentFor(wk, person) ? " · " + escapeHtml(coverText(reassignmentFor(wk, person))) : ""}</div>
     <label class="field-label" for="noteBoldIds">Bold IDs</label>
     <input type="text" id="noteBoldIds" class="modal-input" autocomplete="off" placeholder="e.g. 10234567, 10234568" value="${escapeHtml(initialIds)}" aria-describedby="boldIdHelp boldIdMatches">
     <div class="field-hint" id="boldIdHelp">Separate more than one Bold ID with commas.</div>
@@ -1568,6 +1713,114 @@ function saveNote(){
   showToast(`Note saved for ${person}, Week ${week}`);
 }
 
+// ---------- Reassigning an audit (Edit Mode, one week only) ----------
+
+// The "Someone else" option is marked with data-other, so a role with any name can't collide with it.
+function reassignOtherChosen(){
+  const sel = document.getElementById("reassignTo");
+  return !!(sel.selectedOptions[0] && sel.selectedOptions[0].dataset.other);
+}
+function reassignChoiceKey(){
+  return reassignOtherChosen() ? "\u0000other" : document.getElementById("reassignTo").value;
+}
+
+function openReassign(person){
+  if(!editMode) return;
+  const wk = viewWeek;
+  const assignment = assignmentsForWeek(wk).find(a => a.person === person);
+  if(!assignment || assignment.fixed) return;
+  const current = reassignmentFor(wk, person);
+  const roles = state.config.displayOrder.filter(p => p !== person);
+  const initialIsOther = !!current && !roles.includes(current.to);
+  const initialChoice = initialIsOther ? "\u0000other" : current ? current.to : "";
+  const initialOther = initialIsOther ? current.to : "";
+  const initialReason = current ? current.reason : "";
+  reassignTarget = { week: wk, person };
+  openModal(modalShell("reassignTitle", `
+    <h3 id="reassignTitle">Reassign ${escapeHtml(person)}'s audit</h3>
+    <div class="modal-sub">${escapeHtml(assignment.audit)} · ${escapeHtml(weekLabel(wk))}</div>
+    <p class="modal-help">Use this when someone is out. It only changes this one week — next week's rotation stays the same. The result still counts for this audit, and "Last updated" shows who recorded it.</p>
+    <label class="field-label" for="reassignTo">Who is covering? <span aria-hidden="true">*</span></label>
+    <select id="reassignTo" class="modal-input" aria-required="true" aria-describedby="reassignError">
+      <option value="">Choose a team role…</option>
+      ${roles.map(r => `<option value="${escapeHtml(r)}" ${!initialIsOther && r === initialChoice ? "selected" : ""}>${escapeHtml(r)}</option>`).join("")}
+      <option value="" data-other="1" ${initialIsOther ? "selected" : ""}>Someone else (type their name)</option>
+    </select>
+    <div id="reassignOtherWrap" ${initialIsOther ? "" : "hidden"}>
+      <label class="field-label" for="reassignOther">Their name <span aria-hidden="true">*</span></label>
+      <input type="text" id="reassignOther" class="modal-input" autocomplete="off" value="${escapeHtml(initialOther)}" data-enter-action="save-reassign" aria-describedby="reassignError">
+    </div>
+    <div class="field-error" id="reassignError"></div>
+    <label class="field-label" for="reassignReason">Reason (optional)</label>
+    <input type="text" id="reassignReason" class="modal-input" autocomplete="off" placeholder="e.g. Out sick" value="${escapeHtml(initialReason)}" data-enter-action="save-reassign">
+    <p class="field-hint required-note"><span aria-hidden="true">*</span> Required</p>
+    ${modalConfirmHtml()}
+    <div class="modal-actions">
+      ${current ? `<button type="button" class="btn-ghost undo-reassign" data-action="undo-reassign">Undo Reassign</button>` : ""}
+      <button type="button" class="btn-ghost" data-action="modal-cancel">Cancel</button>
+      <button type="button" class="btn-primary" data-action="save-reassign">Save Reassignment</button>
+    </div>
+  `, true), {
+    focus: "#reassignTo",
+    isDirty: () => reassignChoiceKey() !== initialChoice
+      || document.getElementById("reassignOther").value !== initialOther
+      || document.getElementById("reassignReason").value !== initialReason
+  });
+}
+
+function updateReassignOther(){
+  const other = reassignOtherChosen();
+  document.getElementById("reassignOtherWrap").hidden = !other;
+  document.getElementById("reassignError").textContent = "";
+  if(other) document.getElementById("reassignOther").focus();
+}
+
+function saveReassign(){
+  if(!reassignTarget || !editMode) return;
+  const { week, person } = reassignTarget;
+  const isOther = reassignOtherChosen();
+  const otherInput = document.getElementById("reassignOther");
+  const to = isOther ? otherInput.value.trim() : document.getElementById("reassignTo").value;
+  const error = document.getElementById("reassignError");
+  const problem = !to
+    ? (isOther ? "Type the name of the person covering, then click Save Reassignment." : "Choose who is covering this audit, then click Save Reassignment.")
+    : to.toLowerCase() === person.toLowerCase() ? `${person} already has this audit. Pick someone else to cover it.`
+    : to.toLowerCase() === state.config.fixedPerson.toLowerCase() ? "Pick one team role or one person to cover this audit."
+    : "";
+  if(problem){
+    error.textContent = problem;
+    (isOther ? otherInput : document.getElementById("reassignTo")).focus();
+    return;
+  }
+  if(!own(state.reassignments, week)) state.reassignments[week] = dict();
+  state.reassignments[week][person] = {
+    to,
+    reason: document.getElementById("reassignReason").value.trim(),
+    by: userName(),
+    at: new Date().toISOString()
+  };
+  reassignTarget = null;
+  const saved = saveState();
+  closeModal();
+  render();
+  if(saved) showToast(`Week ${week}: ${person}'s audit is now covered by ${to}`);
+}
+
+function undoReassign(){
+  if(!reassignTarget || !editMode) return;
+  const { week, person } = reassignTarget;
+  const weekMap = own(state.reassignments, week);
+  if(weekMap){
+    delete weekMap[person];
+    if(!Object.keys(weekMap).length) delete state.reassignments[week];
+  }
+  reassignTarget = null;
+  const saved = saveState();
+  closeModal();
+  render();
+  if(saved) showToast(`Week ${week}: ${person} is back on their own audit`);
+}
+
 function openNamePrompt(){
   const current = userName();
   openModal(modalShell("nameTitle", `
@@ -1608,8 +1861,9 @@ function buildPrintArea(){
   const res = weekResults(wk);
   const rows = sortForDisplay(assignmentsForWeek(wk)).map(({person, audit}) => {
     const r = own(res, person) || emptyResult();
+    const cover = reassignmentFor(wk, person);
     return `<tr>
-      <td>${escapeHtml(person)}</td>
+      <td>${escapeHtml(person)}${cover ? "<br>" + escapeHtml(coverText(cover)) : ""}</td>
       <td>${escapeHtml(audit)}</td>
       <td>${r.status ? escapeHtml(r.status) : "Not recorded"}${r.status === "Fail" ? "<br>" + escapeHtml(correctionText(r)) : ""}</td>
       <td>${r.verified ? "Yes" : "No"}</td>
@@ -2167,10 +2421,10 @@ function validateSetupDraft(){
   else if(d.weekOneStart > todayIso()) errors["field-weekOneStart"] = "Week 1 can't start in the future. Pick today or an earlier date.";
   else if(d.weekOneStart < "2020-01-01") errors["field-weekOneStart"] = "That date is too far in the past. Check the year — it should have 4 digits, like 2026.";
   else {
-    const latest = Math.max(0, ...Object.keys(state.results).map(Number));
+    const latest = Math.max(0, ...Object.keys(state.results).concat(Object.keys(state.reassignments)).map(Number));
     const todayWeek = weekNumberFor(todayIso(), d.weekOneStart);
     if(latest > todayWeek){
-      errors["field-weekOneStart"] = `Results are already recorded for Week ${latest}, but with this date today would only be Week ${todayWeek}. Pick ${formatDay(addDays(todayIso(), -(latest - 1) * 7), true)} or an earlier date.`;
+      errors["field-weekOneStart"] = `Results or reassignments are already saved for Week ${latest}, but with this date today would only be Week ${todayWeek}. Pick ${formatDay(addDays(todayIso(), -(latest - 1) * 7), true)} or an earlier date.`;
     }
   }
   if(!d.fixedPerson.name.trim()) errors["fixed-fixedPerson"] = "Enter who does the weekly audit (for example, Everyone).";
@@ -2202,6 +2456,7 @@ function validateSetupDraft(){
   const historyNames = new Set();
   Object.keys(state.results).forEach(wk => Object.keys(state.results[wk]).forEach(p => historyNames.add(p)));
   Object.keys(state.weekSnapshots).forEach(wk => state.weekSnapshots[wk].forEach(r => historyNames.add(r.person)));
+  Object.keys(state.reassignments).forEach(wk => Object.keys(state.reassignments[wk]).forEach(p => historyNames.add(p)));
   const personRows = d.people.map((row, i) => ({ row, key: `people-${i}` })).concat([{ row: d.fixedPerson, key: "fixed-fixedPerson" }]);
   const freed = new Set(personRows.filter(({row}) => row.orig !== null && row.orig !== row.name.trim()).map(({row}) => row.orig));
   personRows.forEach(({row, key}) => {
@@ -2269,7 +2524,7 @@ function applySetup(){
   const d = setupDraft;
   const old = state.config;
 
-  Object.keys(state.results).forEach(wk => {
+  Object.keys(state.results).concat(Object.keys(state.reassignments)).forEach(wk => {
     if(!own(state.weekSnapshots, wk)) state.weekSnapshots[wk] = computeAssignments(Number(wk), old);
   });
 
@@ -2277,6 +2532,10 @@ function applySetup(){
   const auditMap = renameMap(d.audits);
   const fixedAuditMap = renameMap([d.fixedAudit]);
   Object.keys(state.results).forEach(wk => { state.results[wk] = renameKeys(state.results[wk], personMap); });
+  Object.keys(state.reassignments).forEach(wk => {
+    state.reassignments[wk] = renameKeys(state.reassignments[wk], personMap);
+    Object.values(state.reassignments[wk]).forEach(c => { if(own(personMap, c.to) !== undefined) c.to = personMap[c.to]; });
+  });
   Object.keys(state.weekSnapshots).forEach(wk => {
     state.weekSnapshots[wk].forEach(row => {
       if(own(personMap, row.person) !== undefined) row.person = personMap[row.person];
@@ -2355,6 +2614,11 @@ async function handleImportFile(input){
   errorDiv.textContent = "";
   const file = input.files && input.files[0];
   if(!file) return;
+  if(file.size > MAX_IMPORT_BYTES){
+    input.value = "";
+    errorDiv.textContent = "That file is too big to be a tracker backup (over 5 MB). Pick a file that was made with Download Backup (its name starts with flex-audit-backup and ends in .json).";
+    return;
+  }
   input.disabled = true;
   const help = document.getElementById("importHelp");
   const helpText = help.textContent;
@@ -2389,7 +2653,8 @@ function confirmImport(){
   if(!pendingImport) return;
   const restorePrefix = STORAGE_KEY + "-before-restore-";
   const restoreKey = restorePrefix + Date.now();
-  if(!writeStorage(restoreKey, JSON.stringify(state))){
+  const current = saveBlocked ? (readStorage(STORAGE_KEY) || JSON.stringify(state)) : JSON.stringify(state);
+  if(!writeStorage(restoreKey, current)){
     closeModal();
     showError("Couldn't make a safety copy before restoring, so nothing was changed. The browser's storage may be full — ask your manager for help.");
     return;
@@ -2399,6 +2664,8 @@ function confirmImport(){
   } catch(e){}
   state = pendingImport;
   pendingImport = null;
+  saveBlocked = false;
+  clearError("save-blocked");
   setupDraft = null;
   setupDirty = false;
   setupErrors = {};
@@ -2423,6 +2690,10 @@ const actions = {
   "week-today": () => goToWeek(currentWeekNumber()),
   "jump-week": el => goToWeek(Number(el.dataset.week), true),
   "toggle-older": () => { showOlderWeeks = !showOlderWeeks; render(); },
+  "toggle-year": el => toggleHistoryYear(el.dataset.year, el.dataset.newest),
+  "open-reassign": el => openReassign(el.dataset.person),
+  "save-reassign": () => saveReassign(),
+  "undo-reassign": () => undoReassign(),
   "print-week": () => printWeek(),
   "set-name": () => openNamePrompt(),
   "save-name": () => saveName(),
@@ -2485,6 +2756,7 @@ document.addEventListener("focusout", e => {
 
 document.addEventListener("change", e => {
   if(e.target.id === "importFile") handleImportFile(e.target);
+  if(e.target.id === "reassignTo") safely(updateReassignOther);
 });
 
 window.addEventListener("beforeprint", () => { if(state) safely(buildPrintArea); });

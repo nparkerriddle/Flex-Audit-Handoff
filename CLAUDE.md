@@ -51,6 +51,8 @@ Minimum 14px text; chips 14px, audit names 15px.
 - **How-To Guide** — the full step-by-step page per item in the left menu (`sopDetails`).
   Code still calls these SOP; the UI never says "SOP" or "walkthrough".
 - "Failed" = a Fail result. "Repeat Flags" = a Bold ID seen more than once. Don't mix them.
+- **Avionte Bold** for the system (not "Avionte" or "Bold" alone); "Bold ID" for the number.
+- **Flex Master Dashboard** — same thing as "Flex Dashboard"; always use the full name.
 
 ## Data model
 
@@ -61,6 +63,7 @@ state = {
                                          note: string, boldIds: string[], by: string, at: ISO,
                                          correctedBy: string, correctedAt: ISO|"" } } },
   weekSnapshots: { [week]: [{ person, audit, fixed }] },
+  reassignments: { [week]: { [person]: { to: string, reason: string, by: string, at: ISO } } },
   auditDetails:  { [itemName]: string },   // Legend quick summaries
   sopDetails:    { [itemName]: string },   // How-To Guides
   config: { title, subtitle, sidebarTitle, passNote, weekOneStart: "YYYY-MM-DD",
@@ -139,6 +142,21 @@ state = {
   tab (not the I-9), upload the new ID there and edit the certificate. The "Complete
   Supplement B" step stays in the guide — Nicholas confirmed (federal reverification
   requirement). The guide also covers the Expiring Certificates dashboard widget.
+- **File locations vary by site** (2026-10-21): Flex/Axiom may use Box, SharePoint, OneDrive,
+  or the extranet in Teams depending on the site and its current process — staff use whichever
+  is current. Guides that open shared files (New Hire, Terminations, Audit Prep List,
+  Absenteeism/Payroll Tracker) carry this note; don't hardcode "Box" as the only location.
+- **Fully termed** (Nicholas, 2026-10-21): assignment End Date = last day worked, a Logged
+  Activity with type Termination (picked from the list, then notes typed), and status not On
+  Assignment. Terminations guide step 4 fixes whatever is missing.
+- **I-9 documents** (Nicholas, 2026-10-21): an ID expired at the time the I-9 was signed
+  can't be accepted. A List A document that expires later must be replaced if the associate
+  isn't a U.S. citizen (EAD guide; its permanent-resident exception still stands — Nicholas confirmed 2026-10-21). SSN is
+  required on the I-9 because YES uses E-Verify for new hires (E-Verify is only gone from the
+  weekly audits). Box 4 "N/A" is valid only when the work permit has no end date.
+- **W4 exempt**: last year's exempt W4 stays valid Jan 1 – Feb 15; after that a new one is needed.
+- **DD**: paper checks are emergency only (HR confirmed direct deposit/Rapid Card policy).
+- The "Pass = 80% or better" note vs the 75% Pass Rates cutoff stays as is (Nicholas, 2026-10-21).
 - **EAD policy**: the 3-day-after-expiration removal rule in the EAD summary and guide is
   Nicholas's decision (confirmed 2026-10-07) — keep it as written.
 - **Repeat Flags**: any Bold ID recorded 2+ times across all weeks/rows shows in a red
@@ -155,7 +173,18 @@ state = {
 - **Pass Rates by Audit**: table below the weekly rows covering the last 8 weeks
   (`PASS_RATE_WEEKS`) up to this week, grouped by audit name, lowest pass rate first,
   rates under 75% in red (cutoff confirmed by Nicholas 2026-10-09), plus a Not Corrected count. Hidden when no Pass/Fail exists.
-- **Past Weeks** shows the 4 most recent weeks with data; "Show All" expands.
+- **Past Weeks** shows the 4 most recent weeks with data; "Show All" expands into
+  collapsible calendar-year sections (year of the week's start date; newest year open).
+  Weeks never run out — numbering keeps counting (cap `MAX_WEEK` 5200); nothing is archived
+  or deleted.
+- **Reassign** (2026-10-21, Edit Mode only): a manager can hand any rotating row (not the
+  fixed "Everyone" row) for the viewed week — this week or a past week — to another team role
+  or a typed name, with an optional reason ("Out sick"). Stored in `reassignments`; the
+  result stays keyed by the original role, so rotation, history, Pass Rates and Alerts are
+  unchanged, and it affects that one week only. Shown on the row ("Covered by D · Out sick"),
+  print, Past Weeks, Overdue and the note window. Undo Reassign removes it. Setup renames
+  carry reassignment keys and `to` values; weeks with reassignments are frozen into
+  `weekSnapshots` on setup save.
 - **Print This Week** builds `#printArea` (table + manager signature line) and calls
   `window.print()`; a `beforeprint` listener also builds it so Ctrl+P / the browser menu
   print the week being viewed. Print CSS hides everything else.
@@ -166,6 +195,12 @@ state = {
 - Errors go to the persistent red error bar (`showError`, role=alert, Dismiss button);
   successes go to the 4-second toast. Any action that throws shows the error bar. If the
   app can't render at all, a fallback screen offers "Download a Copy of My Data".
+- `saveBlocked`: if damaged/unreadable saved data can't be safety-copied, every save is
+  refused (so the only original isn't overwritten) and the error bar shows "Download a Copy
+  of My Data". A successful restore clears it. Imports over 5MB (`MAX_IMPORT_BYTES`) and
+  week numbers over `MAX_WEEK` (5200) are rejected; an invalid saved Week 1 date is
+  re-anchored like legacy data.
+- Weekly rows put the chips under the text at ≤1100px wide (they squashed the text before).
 
 ## Deferred decisions — do not build without re-confirming with Nicholas
 
@@ -192,6 +227,20 @@ state = {
 - 2026-10-08: E-Verify audit replaced by Audit Core HR Report (state version 3 migration).
   Verified with a 22-check migration suite (fresh, v2, pre-setup legacy, re-load, v2 backup
   import) plus the existing suites.
+- 2026-10-09: guide refinements — EAD rewritten around the Avionte Certificates tab plus
+  the Expiring Certificates widget; Audit Prep List adds the Mini Orientation check (add
+  them to the Mini Orientation tab in Flex Q); Headcount Accuracy requires the Flex
+  Dashboard to match the Core HR report. Old default text is in the *_CONTENT_REFRESH
+  tables so unedited browsers update. All suites pass.
+- 2026-10-21: file-location note (Box/SharePoint/OneDrive/extranet in Teams) on guides that
+  open shared files; Terminations "fully termed" definition + fix-it step; pre-handoff sweep
+  (security, logic, content, browser regression) — fixed narrow-window row layout, save
+  overwrite after a failed safety copy, uncounted damaged entries, invalid Week 1 anchor,
+  import size/week caps, Corrected chip label; I-9/W4/EAD/DD compliance wording and
+  naming standardized; admin-handoff.md updated (separate-origin sandboxed iframe, server-
+  side who/when stamps, MSAL PKCE, content refresh, v3 migration).
+- 2026-10-21: added Reassign (Edit Mode) and year-grouped Past Weeks. 32-check browser
+  suite for the feature plus the existing 32 + 17 checks all pass.
 
 ## Note on a rejected earlier version
 
